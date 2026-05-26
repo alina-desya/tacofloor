@@ -1,0 +1,611 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0E0D0B;
+  --bg2:#161512;
+  --bg3:#1E1C18;
+  --border:#2C2A24;
+  --border2:#3A3830;
+  --text:#E8E4D8;
+  --text2:#8C8880;
+  --text3:#4A4840;
+  --closed:#1A1916;
+  --closed-b:#2A2820;
+  --open:#0D2318;
+  --open-b:#1A4030;
+  --open-acc:#2AE87A;
+  --await:#2A1A08;
+  --await-b:#4A3010;
+  --await-acc:#F5A623;
+  --danger:#E04444;
+  --font-head:'Syne',sans-serif;
+  --font-body:'DM Sans',sans-serif;
+  --font-mono:'DM Mono',monospace;
+  --r:10px;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh;overflow-x:hidden}
+/* ── HEADER ── */
+.header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--border);background:var(--bg2)}
+.logo{font-family:var(--font-head);font-size:18px;font-weight:800;letter-spacing:-.5px;color:var(--text)}
+.logo span{color:var(--open-acc)}
+.header-center{display:flex;align-items:center;gap:8px}
+.time{font-family:var(--font-mono);font-size:13px;color:var(--text2)}
+.header-right{display:flex;align-items:center;gap:12px}
+.role-badge{font-size:11px;font-weight:500;padding:3px 10px;border-radius:999px;border:1px solid var(--border2);color:var(--text2);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.05em}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--open-acc);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#000;cursor:pointer}
+/* ── STATS BAR ── */
+.stats-bar{display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--bg2)}
+.stat{flex:1;padding:12px 20px;border-right:1px solid var(--border);text-align:center}
+.stat:last-child{border-right:none}
+.stat-val{font-family:var(--font-head);font-size:20px;font-weight:800;line-height:1}
+.stat-val.green{color:var(--open-acc)}
+.stat-val.amber{color:var(--await-acc)}
+.stat-val.mono{font-family:var(--font-mono);font-size:16px}
+.stat-label{font-size:11px;color:var(--text2);margin-top:3px;text-transform:uppercase;letter-spacing:.07em}
+/* ── TOOLBAR ── */
+.toolbar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;gap:12px;flex-wrap:wrap}
+.filter-group{display:flex;gap:6px}
+.filter-btn{font-size:12px;padding:5px 12px;border-radius:999px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font-body);transition:all .15s}
+.filter-btn:hover{background:var(--bg3);color:var(--text)}
+.filter-btn.active{background:var(--bg3);border-color:var(--text3);color:var(--text)}
+.view-toggle{display:flex;gap:4px}
+.view-btn{width:30px;height:30px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;font-size:14px}
+.view-btn.active{background:var(--bg3);color:var(--text2);border-color:var(--border2)}
+.section-id{font-family:var(--font-mono);font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em}
+/* ── GRID ── */
+.floor-grid{padding:20px 24px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+/* ── TABLE CARD ── */
+.table-card{border-radius:var(--r);border:1px solid var(--border);background:var(--bg2);cursor:pointer;transition:all .2s;position:relative;overflow:hidden;user-select:none}
+.table-card:hover{border-color:var(--border2);transform:translateY(-1px)}
+.table-card.state-closed{background:var(--closed);border-color:var(--closed-b)}
+.table-card.state-open{background:var(--open);border-color:var(--open-b)}
+.table-card.state-awaiting{background:var(--await);border-color:var(--await-b)}
+.table-card.state-open .card-accent{background:var(--open-acc)}
+.table-card.state-awaiting .card-accent{background:var(--await-acc)}
+.card-accent{position:absolute;top:0;left:0;right:0;height:2px;background:var(--text3)}
+.card-body{padding:14px 14px 12px}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.table-num{font-family:var(--font-head);font-size:28px;font-weight:800;line-height:1;color:var(--text)}
+.status-dot-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.status-chip{font-size:10px;padding:2px 7px;border-radius:999px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;font-family:var(--font-mono)}
+.chip-closed{background:rgba(255,255,255,.04);color:var(--text3)}
+.chip-open{background:rgba(42,232,122,.12);color:var(--open-acc)}
+.chip-await{background:rgba(245,166,35,.12);color:var(--await-acc)}
+.loc-badge{font-size:10px;color:var(--text3);font-family:var(--font-mono)}
+.card-info{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.info-row{display:flex;justify-content:space-between;font-size:12px;color:var(--text2)}
+.info-row .val{color:var(--text);font-weight:500}
+.info-row .val.accent-green{color:var(--open-acc)}
+.info-row .val.accent-amber{color:var(--await-acc)}
+.card-actions{display:flex;gap:6px}
+.act-btn{flex:1;padding:7px 0;font-size:11px;font-weight:500;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font-body);transition:all .15s;text-align:center}
+.act-btn:hover{background:var(--bg3);color:var(--text)}
+.act-btn.primary{border-color:var(--open-acc);color:var(--open-acc)}
+.act-btn.primary:hover{background:rgba(42,232,122,.1)}
+.act-btn.amber{border-color:var(--await-acc);color:var(--await-acc)}
+.act-btn.amber:hover{background:rgba(245,166,35,.1)}
+.act-btn.danger{border-color:var(--danger);color:var(--danger)}
+.act-btn.danger:hover{background:rgba(224,68,68,.1)}
+/* ── SECTION DIVIDER ── */
+.section-divider{padding:8px 24px 4px;display:flex;align-items:center;gap:10px}
+.section-divider span{font-family:var(--font-mono);font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em}
+.divider-line{flex:1;height:1px;background:var(--border)}
+/* ── MODAL OVERLAY ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:100;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:16px 16px 0 0;width:100%;max-width:520px;padding:24px;transform:translateY(30px);transition:transform .25s cubic-bezier(.34,1.56,.64,1);max-height:90vh;overflow-y:auto}
+.modal-overlay.open .modal{transform:translateY(0)}
+.modal-handle{width:36px;height:3px;background:var(--border2);border-radius:999px;margin:0 auto 20px;cursor:pointer}
+.modal-title{font-family:var(--font-head);font-size:20px;font-weight:800;margin-bottom:4px}
+.modal-sub{font-size:13px;color:var(--text2);margin-bottom:20px}
+.modal-section{margin-bottom:18px}
+.modal-label{font-size:11px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:8px}
+.modal-field{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:14px;color:var(--text);width:100%;font-family:var(--font-body);outline:none;transition:border .15s}
+.modal-field:focus{border-color:var(--border2)}
+.menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.menu-item{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;gap:3px}
+.menu-item:hover{border-color:var(--border2)}
+.menu-item.selected{border-color:var(--open-acc);background:rgba(42,232,122,.06)}
+.menu-item-name{font-size:13px;font-weight:500}
+.menu-item-price{font-size:11px;font-family:var(--font-mono);color:var(--await-acc)}
+.menu-item-qty{display:flex;align-items:center;gap:8px;margin-top:6px}
+.qty-btn{width:22px;height:22px;border-radius:4px;border:1px solid var(--border2);background:transparent;color:var(--text);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.qty-btn:hover{background:var(--bg2)}
+.qty-val{font-family:var(--font-mono);font-size:13px;min-width:20px;text-align:center}
+.order-summary{background:var(--bg3);border-radius:8px;padding:12px 14px}
+.order-row{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:1px solid var(--border)}
+.order-row:last-child{border-bottom:none;font-weight:500;font-size:14px;padding-top:8px;margin-top:2px}
+.order-row .price{font-family:var(--font-mono);color:var(--await-acc)}
+.modal-actions{display:flex;gap:8px;margin-top:20px}
+.modal-btn{flex:1;padding:12px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font-body);transition:all .15s}
+.modal-btn:hover{background:var(--bg3)}
+.modal-btn.confirm{border-color:var(--open-acc);color:var(--open-acc)}
+.modal-btn.confirm:hover{background:rgba(42,232,122,.1)}
+.modal-btn.amber-btn{border-color:var(--await-acc);color:var(--await-acc)}
+.modal-btn.amber-btn:hover{background:rgba(245,166,35,.1)}
+.pay-methods{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pay-card{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;cursor:pointer;text-align:center;transition:all .15s}
+.pay-card:hover,.pay-card.selected{border-color:var(--open-acc);background:rgba(42,232,122,.06)}
+.pay-card .pay-icon{font-size:20px;margin-bottom:4px}
+.pay-card .pay-name{font-size:13px;font-weight:500}
+.split-row{display:flex;align-items:center;gap:10px;margin-top:10px}
+.split-toggle{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2)}
+.toggle{width:36px;height:20px;border-radius:999px;background:var(--border);position:relative;cursor:pointer;transition:background .2s;border:none}
+.toggle.on{background:var(--open-acc)}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .2s}
+.toggle.on::after{transform:translateX(16px)}
+.remaining{text-align:center;padding:10px;background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.2);border-radius:8px;font-family:var(--font-mono);font-size:16px;color:var(--await-acc);font-weight:500}
+/* ── PULSE ANIMATION ── */
+@keyframes pulse-amber{0%,100%{opacity:1}50%{opacity:.6}}
+.pulse{animation:pulse-amber 2s ease-in-out infinite}
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg3);border:1px solid var(--border2);border-radius:999px;padding:8px 20px;font-size:13px;font-weight:500;opacity:0;transition:all .3s;pointer-events:none;z-index:200;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">🌮 <span>Taco</span>Floor</div>
+  <div class="header-center">
+    <div class="time" id="clock">—</div>
+  </div>
+  <div class="header-right">
+    <span class="role-badge" id="role-badge">Manager</span>
+    <div class="avatar" id="user-avatar" title="Switch role">MG</div>
+  </div>
+</div>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat">
+    <div class="stat-val" id="stat-open">0</div>
+    <div class="stat-label">Open tables</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val amber pulse" id="stat-await">0</div>
+    <div class="stat-label">Awaiting payment</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val" id="stat-covers">0</div>
+    <div class="stat-label">Covers tonight</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val mono green" id="stat-revenue">$0</div>
+    <div class="stat-label">Revenue (shift)</div>
+  </div>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="filter-group" id="filter-group">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="CLOSED">Closed</button>
+    <button class="filter-btn" data-filter="OPEN">Open</button>
+    <button class="filter-btn" data-filter="AWAITING_PAYMENT">Awaiting payment</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <span class="section-id">INDOOR · OUTDOOR</span>
+  </div>
+</div>
+
+<!-- FLOOR -->
+<div class="section-divider"><span>Indoor</span><div class="divider-line"></div></div>
+<div class="floor-grid" id="indoor-grid"></div>
+
+<div class="section-divider"><span>Outdoor</span><div class="divider-line"></div></div>
+<div class="floor-grid" id="outdoor-grid"></div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="maybeCloseModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-handle" onclick="closeModal()"></div>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── STATE ─────────────────────────────────────────
+let currentRole = 'MANAGER'; // MANAGER | WAITER
+const roles = ['MANAGER','WAITER'];
+
+const MENU = [
+  {id:'d1',name:'Birria Taco',category:'TACO',price:7.00},
+  {id:'d2',name:'Al Pastor Taco',category:'TACO',price:6.50},
+  {id:'d3',name:'Quesabirria',category:'TACO',price:9.00},
+  {id:'d4',name:'Sopa Azteca',category:'SOUP',price:8.00},
+  {id:'d5',name:'Horchata',category:'DRINK',price:3.50},
+  {id:'d6',name:'Chips & Salsa',category:'SIDE',price:4.00},
+  {id:'d7',name:'Guac & Chips',category:'SIDE',price:5.50},
+  {id:'d8',name:'Agua de Jamaica',category:'DRINK',price:3.50},
+];
+
+let tables = [
+  {id:'t1',number:1,capacity:4,location:'INDOOR',status:'OPEN',guestCount:3,waiter:'Carlos',items:[{dishId:'d1',qty:2},{dishId:'d5',qty:3}]},
+  {id:'t2',number:2,capacity:2,location:'INDOOR',status:'CLOSED',guestCount:0,waiter:'Maria',items:[]},
+  {id:'t3',number:3,capacity:6,location:'INDOOR',status:'AWAITING_PAYMENT',guestCount:5,waiter:'Carlos',items:[{dishId:'d1',qty:3},{dishId:'d3',qty:2},{dishId:'d4',qty:1}]},
+  {id:'t4',number:4,capacity:4,location:'INDOOR',status:'OPEN',guestCount:2,waiter:'Maria',items:[{dishId:'d2',qty:2},{dishId:'d6',qty:1}]},
+  {id:'t5',number:5,capacity:2,location:'INDOOR',status:'CLOSED',guestCount:0,waiter:'Luis',items:[]},
+  {id:'t6',number:6,capacity:8,location:'INDOOR',status:'CLOSED',guestCount:0,waiter:'Luis',items:[]},
+  {id:'t7',number:7,capacity:4,location:'OUTDOOR',status:'OPEN',guestCount:4,waiter:'Sofía',items:[{dishId:'d1',qty:4},{dishId:'d8',qty:4},{dishId:'d7',qty:2}]},
+  {id:'t8',number:8,capacity:4,location:'OUTDOOR',status:'AWAITING_PAYMENT',guestCount:3,waiter:'Sofía',items:[{dishId:'d2',qty:3},{dishId:'d5',qty:3}]},
+  {id:'t9',number:9,capacity:2,location:'OUTDOOR',status:'CLOSED',guestCount:0,waiter:'Sofía',items:[]},
+  {id:'t10',number:10,capacity:6,location:'OUTDOOR',status:'CLOSED',guestCount:0,waiter:'Carlos',items:[]},
+];
+
+let tempOrders = {};
+let activeFilter = 'all';
+let revenue = 0;
+
+const WAITERS = ['Carlos','Maria','Luis','Sofía'];
+
+// ─── HELPERS ──────────────────────────────────────
+function getTableTotal(t){
+  return t.items.reduce((s,it)=>{
+    const d=MENU.find(m=>m.id===it.dishId);
+    return s+(d?d.price*it.qty:0);
+  },0);
+}
+function fmt(n){return '$'+n.toFixed(2)}
+function stateClass(s){return s==='CLOSED'?'state-closed':s==='OPEN'?'state-open':'state-awaiting'}
+function stateChip(s){
+  if(s==='CLOSED') return '<span class="status-chip chip-closed">Closed</span>';
+  if(s==='OPEN') return '<span class="status-chip chip-open">Open</span>';
+  return '<span class="status-chip chip-await pulse">Awaiting</span>';
+}
+
+// ─── STATS ────────────────────────────────────────
+function updateStats(){
+  const open=tables.filter(t=>t.status==='OPEN').length;
+  const await_=tables.filter(t=>t.status==='AWAITING_PAYMENT').length;
+  const covers=tables.filter(t=>t.status!=='CLOSED').reduce((s,t)=>s+t.guestCount,0);
+  document.getElementById('stat-open').textContent=open;
+  document.getElementById('stat-await').textContent=await_;
+  document.getElementById('stat-covers').textContent=covers;
+  document.getElementById('stat-revenue').textContent=fmt(revenue);
+}
+
+// ─── RENDER CARDS ─────────────────────────────────
+function renderCard(t){
+  const total=getTableTotal(t);
+  const cls=stateClass(t.status);
+  let actions='';
+  if(t.status==='CLOSED'){
+    actions=`<button class="act-btn primary" onclick="openOpenModal('${t.id}')">Open table</button>`;
+  } else if(t.status==='OPEN'){
+    actions=`<button class="act-btn" onclick="openOrderModal('${t.id}')">Order</button>
+             <button class="act-btn amber" onclick="closeTable('${t.id}')">Close check</button>`;
+  } else {
+    actions=`<button class="act-btn amber" onclick="openPayModal('${t.id}')">Pay ${fmt(total)}</button>`;
+    if(currentRole==='MANAGER') actions+=`<button class="act-btn" onclick="approveTable('${t.id}')">Approve</button>`;
+  }
+  let infoRows='';
+  if(t.status!=='CLOSED'){
+    infoRows+=`<div class="info-row"><span>Guests</span><span class="val">${t.guestCount}</span></div>`;
+    if(total>0) infoRows+=`<div class="info-row"><span>Total</span><span class="val accent-amber">${fmt(total)}</span></div>`;
+  }
+  infoRows+=`<div class="info-row"><span>Waiter</span><span class="val">${t.waiter}</span></div>`;
+  infoRows+=`<div class="info-row"><span>Seats</span><span class="val">${t.capacity}</span></div>`;
+
+  return `<div class="table-card ${cls}" id="card-${t.id}" onclick="handleCardClick(event,'${t.id}')">
+    <div class="card-accent"></div>
+    <div class="card-body">
+      <div class="card-top">
+        <div class="table-num">${t.number < 10 ? '0'+t.number : t.number}</div>
+        <div class="status-dot-wrap">
+          ${stateChip(t.status)}
+          <span class="loc-badge">${t.location}</span>
+        </div>
+      </div>
+      <div class="card-info">${infoRows}</div>
+      <div class="card-actions">${actions}</div>
+    </div>
+  </div>`;
+}
+
+function renderGrid(){
+  const indoor=tables.filter(t=>t.location==='INDOOR'&&(activeFilter==='all'||t.status===activeFilter));
+  const outdoor=tables.filter(t=>t.location==='OUTDOOR'&&(activeFilter==='all'||t.status===activeFilter));
+  document.getElementById('indoor-grid').innerHTML=indoor.map(renderCard).join('');
+  document.getElementById('outdoor-grid').innerHTML=outdoor.map(renderCard).join('');
+  updateStats();
+}
+
+function handleCardClick(e,id){
+  if(e.target.tagName==='BUTTON') return;
+  const t=tables.find(x=>x.id===id);
+  if(!t) return;
+  if(t.status==='CLOSED') openOpenModal(id);
+  else if(t.status==='OPEN') openOrderModal(id);
+  else openPayModal(id);
+}
+
+// ─── MODAL HELPERS ───────────────────────────────
+function openModal(html){
+  document.getElementById('modal-content').innerHTML=html;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal(){
+  document.getElementById('modal-overlay').classList.remove('open');
+  tempOrders={};
+}
+function maybeCloseModal(e){
+  if(e.target===document.getElementById('modal-overlay')) closeModal();
+}
+
+// ─── OPEN TABLE MODAL ─────────────────────────────
+function openOpenModal(id){
+  const t=tables.find(x=>x.id===id);
+  openModal(`
+    <div class="modal-title">Open table ${t.number < 10?'0'+t.number:t.number}</div>
+    <div class="modal-sub">${t.capacity} seats · ${t.location.toLowerCase()}</div>
+    <div class="modal-section">
+      <div class="modal-label">Guest count</div>
+      <input class="modal-field" type="number" id="guest-input" min="1" max="${t.capacity}" value="2" style="width:100%;font-family:var(--font-mono);font-size:20px;text-align:center">
+    </div>
+    ${currentRole==='MANAGER'?`<div class="modal-section">
+      <div class="modal-label">Assign waiter</div>
+      <select class="modal-field" id="waiter-select">
+        ${WAITERS.map(w=>`<option value="${w}"${w===t.waiter?' selected':''}>${w}</option>`).join('')}
+      </select>
+    </div>`:''}
+    <div class="modal-actions">
+      <button class="modal-btn" onclick="closeModal()">Cancel</button>
+      <button class="modal-btn confirm" onclick="doOpenTable('${id}')">Open table</button>
+    </div>
+  `);
+}
+function doOpenTable(id){
+  const t=tables.find(x=>x.id===id);
+  const gc=parseInt(document.getElementById('guest-input').value)||2;
+  const ws=document.getElementById('waiter-select');
+  t.guestCount=gc;
+  t.status='OPEN';
+  t.items=[];
+  if(ws) t.waiter=ws.value;
+  closeModal();
+  renderGrid();
+  showToast(`Table ${t.number} opened · ${gc} guests`);
+}
+
+// ─── ORDER MODAL ──────────────────────────────────
+function openOrderModal(id){
+  const t=tables.find(x=>x.id===id);
+  tempOrders={};
+  t.items.forEach(it=>tempOrders[it.dishId]=it.qty);
+  renderOrderModal(id);
+}
+function renderOrderModal(id){
+  const t=tables.find(x=>x.id===id);
+  const cats=[...new Set(MENU.map(m=>m.category))];
+  const menuHtml=MENU.map(d=>{
+    const qty=tempOrders[d.id]||0;
+    return `<div class="menu-item${qty>0?' selected':''}" id="mi-${d.id}">
+      <div class="menu-item-name">${d.name}</div>
+      <div class="menu-item-price">${fmt(d.price)}</div>
+      <div class="menu-item-qty">
+        <button class="qty-btn" onclick="adjQty('${id}','${d.id}',-1)">−</button>
+        <span class="qty-val" id="qty-${d.id}">${qty}</span>
+        <button class="qty-btn" onclick="adjQty('${id}','${d.id}',1)">+</button>
+      </div>
+    </div>`;
+  }).join('');
+  const total=Object.entries(tempOrders).reduce((s,[did,q])=>{
+    const d=MENU.find(m=>m.id===did);return s+(d?d.price*q:0);},0);
+  const summaryItems=Object.entries(tempOrders).filter(([,q])=>q>0);
+  const summaryHtml=summaryItems.length?summaryItems.map(([did,q])=>{
+    const d=MENU.find(m=>m.id===did);
+    return `<div class="order-row"><span>${q}× ${d.name}</span><span class="price">${fmt(d.price*q)}</span></div>`;
+  }).join('')+`<div class="order-row"><span>Total</span><span class="price">${fmt(total)}</span></div>`:
+  '<div style="font-size:13px;color:var(--text3);text-align:center;padding:8px">No items yet</div>';
+
+  openModal(`
+    <div class="modal-title">Table ${t.number < 10?'0'+t.number:t.number} — Order</div>
+    <div class="modal-sub">${t.guestCount} guests · Waiter: ${t.waiter}</div>
+    <div class="modal-section">
+      <div class="modal-label">Menu</div>
+      <div class="menu-grid">${menuHtml}</div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-label">Summary</div>
+      <div class="order-summary">${summaryHtml}</div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn" onclick="closeModal()">Cancel</button>
+      <button class="modal-btn confirm" onclick="saveOrder('${id}')">Save order</button>
+    </div>
+  `);
+}
+function adjQty(tid,did,delta){
+  tempOrders[did]=(tempOrders[did]||0)+delta;
+  if(tempOrders[did]<0) tempOrders[did]=0;
+  renderOrderModal(tid);
+}
+function saveOrder(id){
+  const t=tables.find(x=>x.id===id);
+  t.items=Object.entries(tempOrders).filter(([,q])=>q>0).map(([did,qty])=>({dishId:did,qty}));
+  closeModal();
+  renderGrid();
+  showToast('Order updated');
+}
+
+// ─── CLOSE TABLE ─────────────────────────────────
+function closeTable(id){
+  const t=tables.find(x=>x.id===id);
+  if(t.items.length===0){showToast('⚠ Add items before closing');return;}
+  t.status='AWAITING_PAYMENT';
+  renderGrid();
+  showToast(`Table ${t.number} closed — awaiting payment`);
+}
+
+// ─── PAY MODAL ───────────────────────────────────
+let payMethod='CASH';
+let isSplit=false;
+
+function openPayModal(id){
+  const t=tables.find(x=>x.id===id);
+  const total=getTableTotal(t);
+  payMethod='CASH'; isSplit=false;
+  openModal(`
+    <div class="modal-title">Payment — Table ${t.number < 10?'0'+t.number:t.number}</div>
+    <div class="modal-sub">Total: <strong style="color:var(--await-acc)">${fmt(total)}</strong> · ${t.guestCount} guests</div>
+    <div class="modal-section">
+      <div class="modal-label">Items</div>
+      <div class="order-summary">
+        ${t.items.map(it=>{const d=MENU.find(m=>m.id===it.dishId);return`<div class="order-row"><span>${it.qty}× ${d.name}</span><span class="price">${fmt(d.price*it.qty)}</span></div>`;}).join('')}
+        <div class="order-row"><span>Total</span><span class="price">${fmt(total)}</span></div>
+      </div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-label">Payment method</div>
+      <div class="pay-methods">
+        <div class="pay-card selected" id="pay-cash" onclick="selectPayMethod('CASH')">
+          <div class="pay-icon">💵</div>
+          <div class="pay-name">Cash</div>
+        </div>
+        <div class="pay-card" id="pay-card" onclick="selectPayMethod('CARD')">
+          <div class="pay-icon">💳</div>
+          <div class="pay-name">Card</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-section" id="card-networks" style="display:none">
+      <div class="modal-label">Card network</div>
+      <div class="pay-methods">
+        <div class="pay-card selected" id="net-visa" onclick="selectNet('visa')"><div class="pay-name">VISA</div></div>
+        <div class="pay-card" id="net-mc" onclick="selectNet('mc')"><div class="pay-name">Mastercard</div></div>
+        <div class="pay-card" id="net-amex" onclick="selectNet('amex')"><div class="pay-name">Amex</div></div>
+        <div class="pay-card" id="net-other" onclick="selectNet('other')"><div class="pay-name">Other</div></div>
+      </div>
+    </div>
+    <div class="modal-section">
+      <div class="split-row">
+        <button class="toggle" id="split-toggle" onclick="toggleSplit('${id}',${total})"></button>
+        <span class="split-toggle">Split bill</span>
+      </div>
+      <div id="split-section" style="display:none;margin-top:10px">
+        <div class="modal-label">Amount to pay now</div>
+        <input class="modal-field" type="number" id="split-amount" min="0.01" max="${total.toFixed(2)}" step="0.01" value="${(total/2).toFixed(2)}" style="font-family:var(--font-mono);font-size:18px;text-align:center">
+        <div class="remaining" style="margin-top:8px" id="remaining-display">Remaining: ${fmt(total/2)}</div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn" onclick="closeModal()">Cancel</button>
+      <button class="modal-btn amber-btn" onclick="processPayment('${id}',${total})">Register payment</button>
+    </div>
+  `);
+}
+function selectPayMethod(m){
+  payMethod=m;
+  document.getElementById('pay-cash').classList.toggle('selected',m==='CASH');
+  document.getElementById('pay-card').classList.toggle('selected',m==='CARD');
+  const nets=document.getElementById('card-networks');
+  if(nets) nets.style.display=m==='CARD'?'block':'none';
+}
+function selectNet(n){
+  ['visa','mc','amex','other'].forEach(k=>{
+    const el=document.getElementById('net-'+k);
+    if(el) el.classList.toggle('selected',k===n);
+  });
+}
+function toggleSplit(id,total){
+  isSplit=!isSplit;
+  const btn=document.getElementById('split-toggle');
+  const sec=document.getElementById('split-section');
+  if(btn) btn.classList.toggle('on',isSplit);
+  if(sec) sec.style.display=isSplit?'block':'none';
+  const amt=document.getElementById('split-amount');
+  if(amt) amt.oninput=()=>{
+    const v=parseFloat(amt.value)||0;
+    const rem=document.getElementById('remaining-display');
+    if(rem) rem.textContent='Remaining: '+fmt(total-v);
+  };
+}
+function processPayment(id,total){
+  const t=tables.find(x=>x.id===id);
+  let amount=total;
+  if(isSplit){
+    const si=document.getElementById('split-amount');
+    amount=parseFloat(si?si.value:total)||total;
+    if(amount<total){
+      showToast(`Partial payment of ${fmt(amount)} registered`);
+      closeModal();
+      return;
+    }
+  }
+  revenue+=total;
+  t.status='CLOSED';
+  t.items=[];
+  t.guestCount=0;
+  closeModal();
+  renderGrid();
+  showToast(`✓ Payment of ${fmt(total)} registered`);
+}
+
+// ─── APPROVE TABLE ───────────────────────────────
+function approveTable(id){
+  const t=tables.find(x=>x.id===id);
+  const total=getTableTotal(t);
+  revenue+=total;
+  t.status='CLOSED';
+  t.items=[];
+  t.guestCount=0;
+  renderGrid();
+  showToast(`✓ Table ${t.number} approved & closed`);
+}
+
+// ─── FILTER ──────────────────────────────────────
+document.getElementById('filter-group').addEventListener('click',e=>{
+  if(!e.target.matches('.filter-btn')) return;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  e.target.classList.add('active');
+  activeFilter=e.target.dataset.filter;
+  renderGrid();
+});
+
+// ─── ROLE TOGGLE ─────────────────────────────────
+document.getElementById('user-avatar').addEventListener('click',()=>{
+  currentRole=currentRole==='MANAGER'?'WAITER':'MANAGER';
+  const abbr=currentRole==='MANAGER'?'MG':'WT';
+  document.getElementById('user-avatar').textContent=abbr;
+  document.getElementById('role-badge').textContent=currentRole==='MANAGER'?'Manager':'Waiter';
+  renderGrid();
+  showToast(`Switched to ${currentRole.toLowerCase()} view`);
+});
+
+// ─── CLOCK ───────────────────────────────────────
+function updateClock(){
+  const now=new Date();
+  const h=String(now.getHours()).padStart(2,'0');
+  const m=String(now.getMinutes()).padStart(2,'0');
+  const s=String(now.getSeconds()).padStart(2,'0');
+  document.getElementById('clock').textContent=`${h}:${m}:${s}`;
+}
+setInterval(updateClock,1000);
+updateClock();
+
+// ─── TOAST ───────────────────────────────────────
+let toastTimer;
+function showToast(msg){
+  clearTimeout(toastTimer);
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// ─── INIT ─────────────────────────────────────────
+renderGrid();
+</script>
+</body>
+</html>
