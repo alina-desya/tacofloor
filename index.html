@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>TacoFloor — Restaurant Floor Manager</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=JetBrains+Mono:wght@400;500&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -28,6 +28,7 @@
   --font-head:'Syne',sans-serif;
   --font-body:'DM Sans',sans-serif;
   --font-mono:'DM Mono',monospace;
+  --font-num:'JetBrains Mono',ui-monospace,Menlo,Monaco,Consolas,monospace;
   --r:10px;
 }
 body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh;overflow-x:hidden}
@@ -45,13 +46,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 .stats-bar{display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--bg2)}
 .stat{flex:1;padding:12px 20px;border-right:1px solid var(--border);text-align:center}
 .stat:last-child{border-right:none}
-.stat-val{font-family:var(--font-head);font-size:20px;font-weight:800;line-height:1}
+.stat-val{font-family:var(--font-num);font-size:20px;font-weight:800;line-height:1}
 .stat-val.green{color:var(--open-acc)}
 .stat-val.amber{color:var(--await-acc)}
-.stat-val.mono{font-family:var(--font-mono);font-size:16px}
-.stat-label{font-size:11px;color:var(--text2);margin-top:3px;text-transform:uppercase;letter-spacing:.07em}
-
-/* ── TOOLBAR ── */
+.stat-val.mono{font-family:var(--font-num);font-size:16px}
 .toolbar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;gap:12px;flex-wrap:wrap}
 .filter-group{display:flex;gap:6px;flex-wrap:wrap}
 .filter-btn{font-size:12px;padding:5px 12px;border-radius:999px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font-body);transition:all .15s}
@@ -73,7 +71,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 .card-accent{position:absolute;top:0;left:0;right:0;height:2px;background:var(--text3)}
 .card-body{padding:14px 14px 12px}
 .card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
-.table-num{font-family:var(--font-head);font-size:28px;font-weight:800;line-height:1;color:var(--text)}
+.table-num{font-family:var(--font-num);font-size:28px;font-weight:800;line-height:1;color:var(--text)}
 .status-dot-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
 .status-chip{font-size:10px;padding:2px 7px;border-radius:999px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;font-family:var(--font-mono)}
 .chip-closed{background:rgba(255,255,255,.04);color:var(--text3)}
@@ -115,15 +113,15 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 .menu-item:hover{border-color:var(--border2)}
 .menu-item.selected{border-color:var(--open-acc);background:rgba(42,232,122,.06)}
 .menu-item-name{font-size:13px;font-weight:500;color:var(--text)}
-.menu-item-price{font-size:11px;font-family:var(--font-mono);color:var(--await-acc)}
+.menu-item-price{font-size:11px;font-family:var(--font-num);color:var(--await-acc)}
 .menu-item-qty{display:flex;align-items:center;gap:8px;margin-top:6px}
 .qty-btn{width:22px;height:22px;border-radius:4px;border:1px solid var(--border2);background:transparent;color:var(--text);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s}
 .qty-btn:hover{background:var(--bg2)}
-.qty-val{font-family:var(--font-mono);font-size:13px;min-width:20px;text-align:center;color:var(--text)}
+.qty-val{font-family:var(--font-num);font-size:13px;min-width:20px;text-align:center;color:var(--text)}
 .order-summary{background:var(--bg3);border-radius:8px;padding:12px 14px}
 .order-row{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:1px solid var(--border);color:var(--text2)}
 .order-row:last-child{border-bottom:none;font-weight:500;font-size:14px;padding-top:8px;margin-top:2px;color:var(--text)}
-.order-row .price{font-family:var(--font-mono);color:var(--await-acc)}
+.order-row .price{font-family:var(--font-num);color:var(--await-acc)}
 .modal-actions{display:flex;gap:8px;margin-top:20px}
 .modal-btn{flex:1;padding:12px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font-body);transition:all .15s}
 .modal-btn:hover{background:var(--bg3)}
@@ -155,6 +153,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 
 /* ── EMPTY STATE ── */
 .empty-state{padding:40px 24px;text-align:center;font-size:13px;color:var(--text3);font-family:var(--font-mono)}
+.num{font-family:var(--font-num);font-variant-numeric:tabular-nums;}
+.stat-val,
+.table-num,
+.menu-item-price,
+.qty-val,
+.order-row .price{font-family:var(--font-num);font-variant-numeric:tabular-nums;}
 </style>
 </head>
 <body>
@@ -292,11 +296,11 @@ function renderCard(t){
   }
   let infoRows = '';
   if(t.status!=='CLOSED'){
-    infoRows += `<div class="info-row"><span>Guests</span><span class="val">${t.guestCount}</span></div>`;
-    if(total>0) infoRows += `<div class="info-row"><span>Total</span><span class="val accent-amber">${fmt(total)}</span></div>`;
+    infoRows += `<div class="info-row"><span>Guests</span><span class="val num">${t.guestCount}</span></div>`;
+    if(total>0) infoRows += `<div class="info-row"><span>Total</span><span class="val accent-amber num">${fmt(total)}</span></div>`;
   }
   infoRows += `<div class="info-row"><span>Waiter</span><span class="val">${t.waiter}</span></div>`;
-  infoRows += `<div class="info-row"><span>Seats</span><span class="val">${t.capacity}</span></div>`;
+  infoRows += `<div class="info-row"><span>Seats</span><span class="val num">${t.capacity}</span></div>`;
 
   return `<div class="table-card ${stateClass(t.status)}" id="card-${t.id}">
     <div class="card-accent"></div>
@@ -397,7 +401,7 @@ function renderOrderModal(id){
   const items = Object.entries(tempOrders).filter(([,q])=>q>0);
   const summaryHtml = items.length
     ? items.map(([did,q])=>{ const d=MENU.find(m=>m.id===did);
-        return `<div class="order-row"><span>${q}× ${d.name}</span><span class="price">${fmt(d.price*q)}</span></div>`;
+        return `<div class="order-row"><span><span class="num">${q}</span>× ${d.name}</span><span class="price">${fmt(d.price*q)}</span></div>`;
       }).join('') + `<div class="order-row"><span>Total</span><span class="price">${fmt(total)}</span></div>`
     : '<div style="font-size:13px;color:var(--text3);text-align:center;padding:8px">No items yet</div>';
   openModal(`
@@ -445,12 +449,12 @@ function openPayModal(id){
   payMethod = 'CASH'; isSplit = false;
   openModal(`
     <div class="modal-title">Payment — Table ${padNum(t.number)}</div>
-    <div class="modal-sub">Total: <strong style="color:var(--await-acc)">${fmt(total)}</strong> · ${t.guestCount} guests</div>
+    <div class="modal-sub">Total: <strong class="num" style="color:var(--await-acc)">${fmt(total)}</strong> · <span class="num">${t.guestCount}</span> guests</div>
     <div class="modal-section">
       <div class="modal-label">Order</div>
       <div class="order-summary">
         ${t.items.map(it=>{ const d=MENU.find(m=>m.id===it.dishId);
-          return `<div class="order-row"><span>${it.qty}× ${d.name}</span><span class="price">${fmt(d.price*it.qty)}</span></div>`;
+          return `<div class="order-row"><span><span class="num">${it.qty}</span>× ${d.name}</span><span class="price">${fmt(d.price*it.qty)}</span></div>`;
         }).join('')}
         <div class="order-row"><span>Total</span><span class="price">${fmt(total)}</span></div>
       </div>
@@ -485,9 +489,9 @@ function openPayModal(id){
       <div id="split-section" style="display:none;margin-top:12px">
         <div class="modal-label">Amount to pay now</div>
         <input class="modal-field" type="number" id="split-amount" min="0.01" max="${total.toFixed(2)}" step="0.01"
-          value="${(total/2).toFixed(2)}" style="font-family:var(--font-mono);font-size:18px;text-align:center"
+          value="${(total/2).toFixed(2)}" style="font-family:var(--font-num);font-size:18px;text-align:center"
           oninput="updateRemaining(${total})">
-        <div class="remaining" style="margin-top:8px" id="remaining-display">Remaining: ${fmt(total/2)}</div>
+        <div class="remaining" style="margin-top:8px" id="remaining-display">Remaining: <span class="num">${fmt(total/2)}</span></div>
       </div>
     </div>
     <div class="modal-actions">
@@ -515,7 +519,7 @@ function toggleSplit(total){
 }
 function updateRemaining(total){
   const v = parseFloat(document.getElementById('split-amount').value) || 0;
-  document.getElementById('remaining-display').textContent = 'Remaining: ' + fmt(total - v);
+  document.getElementById('remaining-display').innerHTML = 'Remaining: <span class="num">' + fmt(total - v) + '</span>';
 }
 function processPayment(id, total){
   const t = tables.find(x=>x.id===id);
