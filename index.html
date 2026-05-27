@@ -1,8 +1,9 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TacoFloor — Restaurant Floor Manager</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -30,15 +31,16 @@
   --r:10px;
 }
 body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh;overflow-x:hidden}
+
 /* ── HEADER ── */
 .header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--border);background:var(--bg2)}
 .logo{font-family:var(--font-head);font-size:18px;font-weight:800;letter-spacing:-.5px;color:var(--text)}
 .logo span{color:var(--open-acc)}
-.header-center{display:flex;align-items:center;gap:8px}
 .time{font-family:var(--font-mono);font-size:13px;color:var(--text2)}
 .header-right{display:flex;align-items:center;gap:12px}
 .role-badge{font-size:11px;font-weight:500;padding:3px 10px;border-radius:999px;border:1px solid var(--border2);color:var(--text2);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.05em}
 .avatar{width:32px;height:32px;border-radius:50%;background:var(--open-acc);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#000;cursor:pointer}
+
 /* ── STATS BAR ── */
 .stats-bar{display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--bg2)}
 .stat{flex:1;padding:12px 20px;border-right:1px solid var(--border);text-align:center}
@@ -48,18 +50,18 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 .stat-val.amber{color:var(--await-acc)}
 .stat-val.mono{font-family:var(--font-mono);font-size:16px}
 .stat-label{font-size:11px;color:var(--text2);margin-top:3px;text-transform:uppercase;letter-spacing:.07em}
+
 /* ── TOOLBAR ── */
 .toolbar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;gap:12px;flex-wrap:wrap}
-.filter-group{display:flex;gap:6px}
+.filter-group{display:flex;gap:6px;flex-wrap:wrap}
 .filter-btn{font-size:12px;padding:5px 12px;border-radius:999px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font-body);transition:all .15s}
 .filter-btn:hover{background:var(--bg3);color:var(--text)}
 .filter-btn.active{background:var(--bg3);border-color:var(--text3);color:var(--text)}
-.view-toggle{display:flex;gap:4px}
-.view-btn{width:30px;height:30px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;font-size:14px}
-.view-btn.active{background:var(--bg3);color:var(--text2);border-color:var(--border2)}
 .section-id{font-family:var(--font-mono);font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em}
+
 /* ── GRID ── */
 .floor-grid{padding:20px 24px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+
 /* ── TABLE CARD ── */
 .table-card{border-radius:var(--r);border:1px solid var(--border);background:var(--bg2);cursor:pointer;transition:all .2s;position:relative;overflow:hidden;user-select:none}
 .table-card:hover{border-color:var(--border2);transform:translateY(-1px)}
@@ -90,14 +92,14 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 .act-btn.primary:hover{background:rgba(42,232,122,.1)}
 .act-btn.amber{border-color:var(--await-acc);color:var(--await-acc)}
 .act-btn.amber:hover{background:rgba(245,166,35,.1)}
-.act-btn.danger{border-color:var(--danger);color:var(--danger)}
-.act-btn.danger:hover{background:rgba(224,68,68,.1)}
+
 /* ── SECTION DIVIDER ── */
 .section-divider{padding:8px 24px 4px;display:flex;align-items:center;gap:10px}
 .section-divider span{font-family:var(--font-mono);font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em}
 .divider-line{flex:1;height:1px;background:var(--border)}
-/* ── MODAL OVERLAY ── */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:100;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);z-index:100;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
 .modal-overlay.open{opacity:1;pointer-events:all}
 .modal{background:var(--bg2);border:1px solid var(--border2);border-radius:16px 16px 0 0;width:100%;max-width:520px;padding:24px;transform:translateY(30px);transition:transform .25s cubic-bezier(.34,1.56,.64,1);max-height:90vh;overflow-y:auto}
 .modal-overlay.open .modal{transform:translateY(0)}
@@ -112,15 +114,15 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 .menu-item{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;gap:3px}
 .menu-item:hover{border-color:var(--border2)}
 .menu-item.selected{border-color:var(--open-acc);background:rgba(42,232,122,.06)}
-.menu-item-name{font-size:13px;font-weight:500}
+.menu-item-name{font-size:13px;font-weight:500;color:var(--text)}
 .menu-item-price{font-size:11px;font-family:var(--font-mono);color:var(--await-acc)}
 .menu-item-qty{display:flex;align-items:center;gap:8px;margin-top:6px}
 .qty-btn{width:22px;height:22px;border-radius:4px;border:1px solid var(--border2);background:transparent;color:var(--text);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s}
 .qty-btn:hover{background:var(--bg2)}
-.qty-val{font-family:var(--font-mono);font-size:13px;min-width:20px;text-align:center}
+.qty-val{font-family:var(--font-mono);font-size:13px;min-width:20px;text-align:center;color:var(--text)}
 .order-summary{background:var(--bg3);border-radius:8px;padding:12px 14px}
-.order-row{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:1px solid var(--border)}
-.order-row:last-child{border-bottom:none;font-weight:500;font-size:14px;padding-top:8px;margin-top:2px}
+.order-row{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:1px solid var(--border);color:var(--text2)}
+.order-row:last-child{border-bottom:none;font-weight:500;font-size:14px;padding-top:8px;margin-top:2px;color:var(--text)}
 .order-row .price{font-family:var(--font-mono);color:var(--await-acc)}
 .modal-actions{display:flex;gap:8px;margin-top:20px}
 .modal-btn{flex:1;padding:12px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font-body);transition:all .15s}
@@ -133,20 +135,26 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 .pay-card{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;cursor:pointer;text-align:center;transition:all .15s}
 .pay-card:hover,.pay-card.selected{border-color:var(--open-acc);background:rgba(42,232,122,.06)}
 .pay-card .pay-icon{font-size:20px;margin-bottom:4px}
-.pay-card .pay-name{font-size:13px;font-weight:500}
+.pay-card .pay-name{font-size:13px;font-weight:500;color:var(--text)}
 .split-row{display:flex;align-items:center;gap:10px;margin-top:10px}
-.split-toggle{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2)}
-.toggle{width:36px;height:20px;border-radius:999px;background:var(--border);position:relative;cursor:pointer;transition:background .2s;border:none}
+.split-toggle-label{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2);cursor:pointer}
+.toggle{width:36px;height:20px;border-radius:999px;background:var(--border);position:relative;cursor:pointer;transition:background .2s;border:none;flex-shrink:0}
 .toggle.on{background:var(--open-acc)}
 .toggle::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .2s}
 .toggle.on::after{transform:translateX(16px)}
 .remaining{text-align:center;padding:10px;background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.2);border-radius:8px;font-family:var(--font-mono);font-size:16px;color:var(--await-acc);font-weight:500}
-/* ── PULSE ANIMATION ── */
+.net-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+
+/* ── PULSE ── */
 @keyframes pulse-amber{0%,100%{opacity:1}50%{opacity:.6}}
 .pulse{animation:pulse-amber 2s ease-in-out infinite}
+
 /* ── TOAST ── */
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg3);border:1px solid var(--border2);border-radius:999px;padding:8px 20px;font-size:13px;font-weight:500;opacity:0;transition:all .3s;pointer-events:none;z-index:200;white-space:nowrap}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg3);border:1px solid var(--border2);border-radius:999px;padding:8px 20px;font-size:13px;font-weight:500;color:var(--text);opacity:0;transition:all .3s;pointer-events:none;z-index:200;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── EMPTY STATE ── */
+.empty-state{padding:40px 24px;text-align:center;font-size:13px;color:var(--text3);font-family:var(--font-mono)}
 </style>
 </head>
 <body>
@@ -154,19 +162,17 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 <!-- HEADER -->
 <div class="header">
   <div class="logo">🌮 <span>Taco</span>Floor</div>
-  <div class="header-center">
-    <div class="time" id="clock">—</div>
-  </div>
+  <div class="time" id="clock">—</div>
   <div class="header-right">
     <span class="role-badge" id="role-badge">Manager</span>
-    <div class="avatar" id="user-avatar" title="Switch role">MG</div>
+    <div class="avatar" id="user-avatar" title="Click to switch role">MG</div>
   </div>
 </div>
 
 <!-- STATS BAR -->
 <div class="stats-bar">
   <div class="stat">
-    <div class="stat-val" id="stat-open">0</div>
+    <div class="stat-val green" id="stat-open">0</div>
     <div class="stat-label">Open tables</div>
   </div>
   <div class="stat">
@@ -178,7 +184,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
     <div class="stat-label">Covers tonight</div>
   </div>
   <div class="stat">
-    <div class="stat-val mono green" id="stat-revenue">$0</div>
+    <div class="stat-val mono green" id="stat-revenue">$0.00</div>
     <div class="stat-label">Revenue (shift)</div>
   </div>
 </div>
@@ -191,9 +197,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
     <button class="filter-btn" data-filter="OPEN">Open</button>
     <button class="filter-btn" data-filter="AWAITING_PAYMENT">Awaiting payment</button>
   </div>
-  <div style="display:flex;align-items:center;gap:8px">
-    <span class="section-id">INDOOR · OUTDOOR</span>
-  </div>
+  <span class="section-id">INDOOR · OUTDOOR</span>
 </div>
 
 <!-- FLOOR -->
@@ -204,9 +208,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 <div class="floor-grid" id="outdoor-grid"></div>
 
 <!-- MODAL -->
-<div class="modal-overlay" id="modal-overlay" onclick="maybeCloseModal(event)">
+<div class="modal-overlay" id="modal-overlay">
   <div class="modal" id="modal">
-    <div class="modal-handle" onclick="closeModal()"></div>
+    <div class="modal-handle" id="modal-handle"></div>
     <div id="modal-content"></div>
   </div>
 </div>
@@ -215,9 +219,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 <div class="toast" id="toast"></div>
 
 <script>
-// ─── STATE ─────────────────────────────────────────
-let currentRole = 'MANAGER'; // MANAGER | WAITER
-const roles = ['MANAGER','WAITER'];
+// ─── DATA ─────────────────────────────────────────
+let currentRole = 'MANAGER';
 
 const MENU = [
   {id:'d1',name:'Birria Taco',category:'TACO',price:7.00},
@@ -243,69 +246,64 @@ let tables = [
   {id:'t10',number:10,capacity:6,location:'OUTDOOR',status:'CLOSED',guestCount:0,waiter:'Carlos',items:[]},
 ];
 
+const WAITERS = ['Carlos','Maria','Luis','Sofía'];
 let tempOrders = {};
 let activeFilter = 'all';
 let revenue = 0;
-
-const WAITERS = ['Carlos','Maria','Luis','Sofía'];
+let payMethod = 'CASH';
+let isSplit = false;
 
 // ─── HELPERS ──────────────────────────────────────
-function getTableTotal(t){
+function getTotal(t){
   return t.items.reduce((s,it)=>{
-    const d=MENU.find(m=>m.id===it.dishId);
-    return s+(d?d.price*it.qty:0);
-  },0);
+    const d = MENU.find(m=>m.id===it.dishId);
+    return s + (d ? d.price * it.qty : 0);
+  }, 0);
 }
-function fmt(n){return '$'+n.toFixed(2)}
-function stateClass(s){return s==='CLOSED'?'state-closed':s==='OPEN'?'state-open':'state-awaiting'}
+function fmt(n){ return '$' + n.toFixed(2); }
+function padNum(n){ return n < 10 ? '0'+n : ''+n; }
+function stateClass(s){ return s==='CLOSED'?'state-closed':s==='OPEN'?'state-open':'state-awaiting'; }
 function stateChip(s){
   if(s==='CLOSED') return '<span class="status-chip chip-closed">Closed</span>';
-  if(s==='OPEN') return '<span class="status-chip chip-open">Open</span>';
+  if(s==='OPEN')   return '<span class="status-chip chip-open">Open</span>';
   return '<span class="status-chip chip-await pulse">Awaiting</span>';
 }
 
 // ─── STATS ────────────────────────────────────────
 function updateStats(){
-  const open=tables.filter(t=>t.status==='OPEN').length;
-  const await_=tables.filter(t=>t.status==='AWAITING_PAYMENT').length;
-  const covers=tables.filter(t=>t.status!=='CLOSED').reduce((s,t)=>s+t.guestCount,0);
-  document.getElementById('stat-open').textContent=open;
-  document.getElementById('stat-await').textContent=await_;
-  document.getElementById('stat-covers').textContent=covers;
-  document.getElementById('stat-revenue').textContent=fmt(revenue);
+  document.getElementById('stat-open').textContent    = tables.filter(t=>t.status==='OPEN').length;
+  document.getElementById('stat-await').textContent   = tables.filter(t=>t.status==='AWAITING_PAYMENT').length;
+  document.getElementById('stat-covers').textContent  = tables.filter(t=>t.status!=='CLOSED').reduce((s,t)=>s+t.guestCount,0);
+  document.getElementById('stat-revenue').textContent = fmt(revenue);
 }
 
-// ─── RENDER CARDS ─────────────────────────────────
+// ─── RENDER ───────────────────────────────────────
 function renderCard(t){
-  const total=getTableTotal(t);
-  const cls=stateClass(t.status);
-  let actions='';
+  const total = getTotal(t);
+  let actions = '';
   if(t.status==='CLOSED'){
-    actions=`<button class="act-btn primary" onclick="openOpenModal('${t.id}')">Open table</button>`;
+    actions = `<button class="act-btn primary" onclick="openOpenModal('${t.id}')">Open table</button>`;
   } else if(t.status==='OPEN'){
-    actions=`<button class="act-btn" onclick="openOrderModal('${t.id}')">Order</button>
-             <button class="act-btn amber" onclick="closeTable('${t.id}')">Close check</button>`;
+    actions = `<button class="act-btn" onclick="openOrderModal('${t.id}')">Order</button>
+               <button class="act-btn amber" onclick="doCloseTable('${t.id}')">Close check</button>`;
   } else {
-    actions=`<button class="act-btn amber" onclick="openPayModal('${t.id}')">Pay ${fmt(total)}</button>`;
-    if(currentRole==='MANAGER') actions+=`<button class="act-btn" onclick="approveTable('${t.id}')">Approve</button>`;
+    actions = `<button class="act-btn amber" onclick="openPayModal('${t.id}')">Pay ${fmt(total)}</button>`;
+    if(currentRole==='MANAGER') actions += `<button class="act-btn" onclick="approveTable('${t.id}')">Approve</button>`;
   }
-  let infoRows='';
+  let infoRows = '';
   if(t.status!=='CLOSED'){
-    infoRows+=`<div class="info-row"><span>Guests</span><span class="val">${t.guestCount}</span></div>`;
-    if(total>0) infoRows+=`<div class="info-row"><span>Total</span><span class="val accent-amber">${fmt(total)}</span></div>`;
+    infoRows += `<div class="info-row"><span>Guests</span><span class="val">${t.guestCount}</span></div>`;
+    if(total>0) infoRows += `<div class="info-row"><span>Total</span><span class="val accent-amber">${fmt(total)}</span></div>`;
   }
-  infoRows+=`<div class="info-row"><span>Waiter</span><span class="val">${t.waiter}</span></div>`;
-  infoRows+=`<div class="info-row"><span>Seats</span><span class="val">${t.capacity}</span></div>`;
+  infoRows += `<div class="info-row"><span>Waiter</span><span class="val">${t.waiter}</span></div>`;
+  infoRows += `<div class="info-row"><span>Seats</span><span class="val">${t.capacity}</span></div>`;
 
-  return `<div class="table-card ${cls}" id="card-${t.id}" onclick="handleCardClick(event,'${t.id}')">
+  return `<div class="table-card ${stateClass(t.status)}" id="card-${t.id}">
     <div class="card-accent"></div>
     <div class="card-body">
       <div class="card-top">
-        <div class="table-num">${t.number < 10 ? '0'+t.number : t.number}</div>
-        <div class="status-dot-wrap">
-          ${stateChip(t.status)}
-          <span class="loc-badge">${t.location}</span>
-        </div>
+        <div class="table-num">${padNum(t.number)}</div>
+        <div class="status-dot-wrap">${stateChip(t.status)}<span class="loc-badge">${t.location}</span></div>
       </div>
       <div class="card-info">${infoRows}</div>
       <div class="card-actions">${actions}</div>
@@ -314,51 +312,47 @@ function renderCard(t){
 }
 
 function renderGrid(){
-  const indoor=tables.filter(t=>t.location==='INDOOR'&&(activeFilter==='all'||t.status===activeFilter));
-  const outdoor=tables.filter(t=>t.location==='OUTDOOR'&&(activeFilter==='all'||t.status===activeFilter));
-  document.getElementById('indoor-grid').innerHTML=indoor.map(renderCard).join('');
-  document.getElementById('outdoor-grid').innerHTML=outdoor.map(renderCard).join('');
+  const indoor  = tables.filter(t=>t.location==='INDOOR'  && (activeFilter==='all'||t.status===activeFilter));
+  const outdoor = tables.filter(t=>t.location==='OUTDOOR' && (activeFilter==='all'||t.status===activeFilter));
+  document.getElementById('indoor-grid').innerHTML  = indoor.length  ? indoor.map(renderCard).join('')  : '<div class="empty-state">No tables match this filter</div>';
+  document.getElementById('outdoor-grid').innerHTML = outdoor.length ? outdoor.map(renderCard).join('') : '<div class="empty-state">No tables match this filter</div>';
   updateStats();
 }
 
-function handleCardClick(e,id){
-  if(e.target.tagName==='BUTTON') return;
-  const t=tables.find(x=>x.id===id);
-  if(!t) return;
-  if(t.status==='CLOSED') openOpenModal(id);
-  else if(t.status==='OPEN') openOrderModal(id);
-  else openPayModal(id);
-}
-
-// ─── MODAL HELPERS ───────────────────────────────
+// ─── MODAL ────────────────────────────────────────
 function openModal(html){
-  document.getElementById('modal-content').innerHTML=html;
+  document.getElementById('modal-content').innerHTML = html;
   document.getElementById('modal-overlay').classList.add('open');
 }
 function closeModal(){
   document.getElementById('modal-overlay').classList.remove('open');
-  tempOrders={};
+  tempOrders = {};
+  payMethod = 'CASH';
+  isSplit = false;
 }
-function maybeCloseModal(e){
-  if(e.target===document.getElementById('modal-overlay')) closeModal();
-}
+document.getElementById('modal-overlay').addEventListener('click', e=>{
+  if(e.target === document.getElementById('modal-overlay')) closeModal();
+});
+document.getElementById('modal-handle').addEventListener('click', closeModal);
 
-// ─── OPEN TABLE MODAL ─────────────────────────────
+// ─── OPEN TABLE ───────────────────────────────────
 function openOpenModal(id){
-  const t=tables.find(x=>x.id===id);
+  const t = tables.find(x=>x.id===id);
+  const waiterOptions = WAITERS.map(w=>`<option value="${w}"${w===t.waiter?' selected':''}>${w}</option>`).join('');
+  const waiterSection = currentRole==='MANAGER' ? `
+    <div class="modal-section">
+      <div class="modal-label">Assign waiter</div>
+      <select class="modal-field" id="waiter-select">${waiterOptions}</select>
+    </div>` : '';
   openModal(`
-    <div class="modal-title">Open table ${t.number < 10?'0'+t.number:t.number}</div>
+    <div class="modal-title">Open table ${padNum(t.number)}</div>
     <div class="modal-sub">${t.capacity} seats · ${t.location.toLowerCase()}</div>
     <div class="modal-section">
       <div class="modal-label">Guest count</div>
-      <input class="modal-field" type="number" id="guest-input" min="1" max="${t.capacity}" value="2" style="width:100%;font-family:var(--font-mono);font-size:20px;text-align:center">
+      <input class="modal-field" type="number" id="guest-input" min="1" max="${t.capacity}" value="2"
+        style="font-family:var(--font-mono);font-size:20px;text-align:center">
     </div>
-    ${currentRole==='MANAGER'?`<div class="modal-section">
-      <div class="modal-label">Assign waiter</div>
-      <select class="modal-field" id="waiter-select">
-        ${WAITERS.map(w=>`<option value="${w}"${w===t.waiter?' selected':''}>${w}</option>`).join('')}
-      </select>
-    </div>`:''}
+    ${waiterSection}
     <div class="modal-actions">
       <button class="modal-btn" onclick="closeModal()">Cancel</button>
       <button class="modal-btn confirm" onclick="doOpenTable('${id}')">Open table</button>
@@ -366,51 +360,48 @@ function openOpenModal(id){
   `);
 }
 function doOpenTable(id){
-  const t=tables.find(x=>x.id===id);
-  const gc=parseInt(document.getElementById('guest-input').value)||2;
-  const ws=document.getElementById('waiter-select');
-  t.guestCount=gc;
-  t.status='OPEN';
-  t.items=[];
-  if(ws) t.waiter=ws.value;
+  const t = tables.find(x=>x.id===id);
+  t.guestCount = parseInt(document.getElementById('guest-input').value) || 2;
+  t.status = 'OPEN';
+  t.items = [];
+  const ws = document.getElementById('waiter-select');
+  if(ws) t.waiter = ws.value;
   closeModal();
   renderGrid();
-  showToast(`Table ${t.number} opened · ${gc} guests`);
+  showToast(`Table ${t.number} opened · ${t.guestCount} guests`);
 }
 
-// ─── ORDER MODAL ──────────────────────────────────
+// ─── ORDER ────────────────────────────────────────
 function openOrderModal(id){
-  const t=tables.find(x=>x.id===id);
-  tempOrders={};
-  t.items.forEach(it=>tempOrders[it.dishId]=it.qty);
+  const t = tables.find(x=>x.id===id);
+  tempOrders = {};
+  t.items.forEach(it => tempOrders[it.dishId] = it.qty);
   renderOrderModal(id);
 }
 function renderOrderModal(id){
-  const t=tables.find(x=>x.id===id);
-  const cats=[...new Set(MENU.map(m=>m.category))];
-  const menuHtml=MENU.map(d=>{
-    const qty=tempOrders[d.id]||0;
-    return `<div class="menu-item${qty>0?' selected':''}" id="mi-${d.id}">
+  const t = tables.find(x=>x.id===id);
+  const menuHtml = MENU.map(d=>{
+    const qty = tempOrders[d.id] || 0;
+    return `<div class="menu-item${qty>0?' selected':''}">
       <div class="menu-item-name">${d.name}</div>
       <div class="menu-item-price">${fmt(d.price)}</div>
       <div class="menu-item-qty">
         <button class="qty-btn" onclick="adjQty('${id}','${d.id}',-1)">−</button>
-        <span class="qty-val" id="qty-${d.id}">${qty}</span>
+        <span class="qty-val">${qty}</span>
         <button class="qty-btn" onclick="adjQty('${id}','${d.id}',1)">+</button>
       </div>
     </div>`;
   }).join('');
-  const total=Object.entries(tempOrders).reduce((s,[did,q])=>{
-    const d=MENU.find(m=>m.id===did);return s+(d?d.price*q:0);},0);
-  const summaryItems=Object.entries(tempOrders).filter(([,q])=>q>0);
-  const summaryHtml=summaryItems.length?summaryItems.map(([did,q])=>{
-    const d=MENU.find(m=>m.id===did);
-    return `<div class="order-row"><span>${q}× ${d.name}</span><span class="price">${fmt(d.price*q)}</span></div>`;
-  }).join('')+`<div class="order-row"><span>Total</span><span class="price">${fmt(total)}</span></div>`:
-  '<div style="font-size:13px;color:var(--text3);text-align:center;padding:8px">No items yet</div>';
-
+  const total = Object.entries(tempOrders).reduce((s,[did,q])=>{
+    const d = MENU.find(m=>m.id===did); return s+(d?d.price*q:0);},0);
+  const items = Object.entries(tempOrders).filter(([,q])=>q>0);
+  const summaryHtml = items.length
+    ? items.map(([did,q])=>{ const d=MENU.find(m=>m.id===did);
+        return `<div class="order-row"><span>${q}× ${d.name}</span><span class="price">${fmt(d.price*q)}</span></div>`;
+      }).join('') + `<div class="order-row"><span>Total</span><span class="price">${fmt(total)}</span></div>`
+    : '<div style="font-size:13px;color:var(--text3);text-align:center;padding:8px">No items yet</div>';
   openModal(`
-    <div class="modal-title">Table ${t.number < 10?'0'+t.number:t.number} — Order</div>
+    <div class="modal-title">Table ${padNum(t.number)} — Order</div>
     <div class="modal-sub">${t.guestCount} guests · Waiter: ${t.waiter}</div>
     <div class="modal-section">
       <div class="modal-label">Menu</div>
@@ -427,42 +418,40 @@ function renderOrderModal(id){
   `);
 }
 function adjQty(tid,did,delta){
-  tempOrders[did]=(tempOrders[did]||0)+delta;
-  if(tempOrders[did]<0) tempOrders[did]=0;
+  tempOrders[did] = Math.max(0, (tempOrders[did]||0) + delta);
   renderOrderModal(tid);
 }
 function saveOrder(id){
-  const t=tables.find(x=>x.id===id);
-  t.items=Object.entries(tempOrders).filter(([,q])=>q>0).map(([did,qty])=>({dishId:did,qty}));
+  const t = tables.find(x=>x.id===id);
+  t.items = Object.entries(tempOrders).filter(([,q])=>q>0).map(([dishId,qty])=>({dishId,qty}));
   closeModal();
   renderGrid();
   showToast('Order updated');
 }
 
-// ─── CLOSE TABLE ─────────────────────────────────
-function closeTable(id){
-  const t=tables.find(x=>x.id===id);
-  if(t.items.length===0){showToast('⚠ Add items before closing');return;}
-  t.status='AWAITING_PAYMENT';
+// ─── CLOSE TABLE ──────────────────────────────────
+function doCloseTable(id){
+  const t = tables.find(x=>x.id===id);
+  if(!t.items.length){ showToast('⚠ Add items before closing'); return; }
+  t.status = 'AWAITING_PAYMENT';
   renderGrid();
   showToast(`Table ${t.number} closed — awaiting payment`);
 }
 
-// ─── PAY MODAL ───────────────────────────────────
-let payMethod='CASH';
-let isSplit=false;
-
+// ─── PAYMENT ──────────────────────────────────────
 function openPayModal(id){
-  const t=tables.find(x=>x.id===id);
-  const total=getTableTotal(t);
-  payMethod='CASH'; isSplit=false;
+  const t = tables.find(x=>x.id===id);
+  const total = getTotal(t);
+  payMethod = 'CASH'; isSplit = false;
   openModal(`
-    <div class="modal-title">Payment — Table ${t.number < 10?'0'+t.number:t.number}</div>
+    <div class="modal-title">Payment — Table ${padNum(t.number)}</div>
     <div class="modal-sub">Total: <strong style="color:var(--await-acc)">${fmt(total)}</strong> · ${t.guestCount} guests</div>
     <div class="modal-section">
-      <div class="modal-label">Items</div>
+      <div class="modal-label">Order</div>
       <div class="order-summary">
-        ${t.items.map(it=>{const d=MENU.find(m=>m.id===it.dishId);return`<div class="order-row"><span>${it.qty}× ${d.name}</span><span class="price">${fmt(d.price*it.qty)}</span></div>`;}).join('')}
+        ${t.items.map(it=>{ const d=MENU.find(m=>m.id===it.dishId);
+          return `<div class="order-row"><span>${it.qty}× ${d.name}</span><span class="price">${fmt(d.price*it.qty)}</span></div>`;
+        }).join('')}
         <div class="order-row"><span>Total</span><span class="price">${fmt(total)}</span></div>
       </div>
     </div>
@@ -470,32 +459,34 @@ function openPayModal(id){
       <div class="modal-label">Payment method</div>
       <div class="pay-methods">
         <div class="pay-card selected" id="pay-cash" onclick="selectPayMethod('CASH')">
-          <div class="pay-icon">💵</div>
-          <div class="pay-name">Cash</div>
+          <div class="pay-icon">💵</div><div class="pay-name">Cash</div>
         </div>
-        <div class="pay-card" id="pay-card" onclick="selectPayMethod('CARD')">
-          <div class="pay-icon">💳</div>
-          <div class="pay-name">Card</div>
+        <div class="pay-card" id="pay-card-opt" onclick="selectPayMethod('CARD')">
+          <div class="pay-icon">💳</div><div class="pay-name">Card</div>
         </div>
       </div>
     </div>
     <div class="modal-section" id="card-networks" style="display:none">
       <div class="modal-label">Card network</div>
-      <div class="pay-methods">
-        <div class="pay-card selected" id="net-visa" onclick="selectNet('visa')"><div class="pay-name">VISA</div></div>
-        <div class="pay-card" id="net-mc" onclick="selectNet('mc')"><div class="pay-name">Mastercard</div></div>
-        <div class="pay-card" id="net-amex" onclick="selectNet('amex')"><div class="pay-name">Amex</div></div>
-        <div class="pay-card" id="net-other" onclick="selectNet('other')"><div class="pay-name">Other</div></div>
+      <div class="net-grid">
+        <div class="pay-card selected" id="net-visa"  onclick="selectNet('visa')"><div class="pay-name">VISA</div></div>
+        <div class="pay-card"          id="net-mc"    onclick="selectNet('mc')"><div class="pay-name">Mastercard</div></div>
+        <div class="pay-card"          id="net-amex"  onclick="selectNet('amex')"><div class="pay-name">Amex</div></div>
+        <div class="pay-card"          id="net-other" onclick="selectNet('other')"><div class="pay-name">Other</div></div>
       </div>
     </div>
     <div class="modal-section">
       <div class="split-row">
-        <button class="toggle" id="split-toggle" onclick="toggleSplit('${id}',${total})"></button>
-        <span class="split-toggle">Split bill</span>
+        <label class="split-toggle-label">
+          <button class="toggle" id="split-toggle" onclick="toggleSplit(${total})"></button>
+          Split bill
+        </label>
       </div>
-      <div id="split-section" style="display:none;margin-top:10px">
+      <div id="split-section" style="display:none;margin-top:12px">
         <div class="modal-label">Amount to pay now</div>
-        <input class="modal-field" type="number" id="split-amount" min="0.01" max="${total.toFixed(2)}" step="0.01" value="${(total/2).toFixed(2)}" style="font-family:var(--font-mono);font-size:18px;text-align:center">
+        <input class="modal-field" type="number" id="split-amount" min="0.01" max="${total.toFixed(2)}" step="0.01"
+          value="${(total/2).toFixed(2)}" style="font-family:var(--font-mono);font-size:18px;text-align:center"
+          oninput="updateRemaining(${total})">
         <div class="remaining" style="margin-top:8px" id="remaining-display">Remaining: ${fmt(total/2)}</div>
       </div>
     </div>
@@ -506,102 +497,94 @@ function openPayModal(id){
   `);
 }
 function selectPayMethod(m){
-  payMethod=m;
-  document.getElementById('pay-cash').classList.toggle('selected',m==='CASH');
-  document.getElementById('pay-card').classList.toggle('selected',m==='CARD');
-  const nets=document.getElementById('card-networks');
-  if(nets) nets.style.display=m==='CARD'?'block':'none';
+  payMethod = m;
+  document.getElementById('pay-cash').classList.toggle('selected', m==='CASH');
+  document.getElementById('pay-card-opt').classList.toggle('selected', m==='CARD');
+  document.getElementById('card-networks').style.display = m==='CARD' ? 'block' : 'none';
 }
 function selectNet(n){
   ['visa','mc','amex','other'].forEach(k=>{
-    const el=document.getElementById('net-'+k);
-    if(el) el.classList.toggle('selected',k===n);
+    const el = document.getElementById('net-'+k);
+    if(el) el.classList.toggle('selected', k===n);
   });
 }
-function toggleSplit(id,total){
-  isSplit=!isSplit;
-  const btn=document.getElementById('split-toggle');
-  const sec=document.getElementById('split-section');
-  if(btn) btn.classList.toggle('on',isSplit);
-  if(sec) sec.style.display=isSplit?'block':'none';
-  const amt=document.getElementById('split-amount');
-  if(amt) amt.oninput=()=>{
-    const v=parseFloat(amt.value)||0;
-    const rem=document.getElementById('remaining-display');
-    if(rem) rem.textContent='Remaining: '+fmt(total-v);
-  };
+function toggleSplit(total){
+  isSplit = !isSplit;
+  document.getElementById('split-toggle').classList.toggle('on', isSplit);
+  document.getElementById('split-section').style.display = isSplit ? 'block' : 'none';
 }
-function processPayment(id,total){
-  const t=tables.find(x=>x.id===id);
-  let amount=total;
+function updateRemaining(total){
+  const v = parseFloat(document.getElementById('split-amount').value) || 0;
+  document.getElementById('remaining-display').textContent = 'Remaining: ' + fmt(total - v);
+}
+function processPayment(id, total){
+  const t = tables.find(x=>x.id===id);
+  let amount = total;
   if(isSplit){
-    const si=document.getElementById('split-amount');
-    amount=parseFloat(si?si.value:total)||total;
-    if(amount<total){
+    amount = parseFloat(document.getElementById('split-amount').value) || total;
+    if(amount < total){
       showToast(`Partial payment of ${fmt(amount)} registered`);
       closeModal();
       return;
     }
   }
-  revenue+=total;
-  t.status='CLOSED';
-  t.items=[];
-  t.guestCount=0;
+  revenue += total;
+  t.status = 'CLOSED';
+  t.items = [];
+  t.guestCount = 0;
   closeModal();
   renderGrid();
   showToast(`✓ Payment of ${fmt(total)} registered`);
 }
 
-// ─── APPROVE TABLE ───────────────────────────────
+// ─── APPROVE ──────────────────────────────────────
 function approveTable(id){
-  const t=tables.find(x=>x.id===id);
-  const total=getTableTotal(t);
-  revenue+=total;
-  t.status='CLOSED';
-  t.items=[];
-  t.guestCount=0;
+  const t = tables.find(x=>x.id===id);
+  revenue += getTotal(t);
+  t.status = 'CLOSED';
+  t.items = [];
+  t.guestCount = 0;
   renderGrid();
   showToast(`✓ Table ${t.number} approved & closed`);
 }
 
-// ─── FILTER ──────────────────────────────────────
-document.getElementById('filter-group').addEventListener('click',e=>{
+// ─── FILTER ───────────────────────────────────────
+document.getElementById('filter-group').addEventListener('click', e=>{
   if(!e.target.matches('.filter-btn')) return;
   document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
   e.target.classList.add('active');
-  activeFilter=e.target.dataset.filter;
+  activeFilter = e.target.dataset.filter;
   renderGrid();
 });
 
-// ─── ROLE TOGGLE ─────────────────────────────────
-document.getElementById('user-avatar').addEventListener('click',()=>{
-  currentRole=currentRole==='MANAGER'?'WAITER':'MANAGER';
-  const abbr=currentRole==='MANAGER'?'MG':'WT';
-  document.getElementById('user-avatar').textContent=abbr;
-  document.getElementById('role-badge').textContent=currentRole==='MANAGER'?'Manager':'Waiter';
+// ─── ROLE TOGGLE ──────────────────────────────────
+document.getElementById('user-avatar').addEventListener('click', ()=>{
+  currentRole = currentRole==='MANAGER' ? 'WAITER' : 'MANAGER';
+  document.getElementById('user-avatar').textContent  = currentRole==='MANAGER' ? 'MG' : 'WT';
+  document.getElementById('role-badge').textContent   = currentRole==='MANAGER' ? 'Manager' : 'Waiter';
   renderGrid();
   showToast(`Switched to ${currentRole.toLowerCase()} view`);
 });
 
-// ─── CLOCK ───────────────────────────────────────
+// ─── CLOCK ────────────────────────────────────────
 function updateClock(){
-  const now=new Date();
-  const h=String(now.getHours()).padStart(2,'0');
-  const m=String(now.getMinutes()).padStart(2,'0');
-  const s=String(now.getSeconds()).padStart(2,'0');
-  document.getElementById('clock').textContent=`${h}:${m}:${s}`;
+  const n = new Date();
+  document.getElementById('clock').textContent =
+    String(n.getHours()).padStart(2,'0') + ':' +
+    String(n.getMinutes()).padStart(2,'0') + ':' +
+    String(n.getSeconds()).padStart(2,'0');
 }
-setInterval(updateClock,1000);
+setInterval(updateClock, 1000);
 updateClock();
 
-// ─── TOAST ───────────────────────────────────────
+// ─── TOAST ────────────────────────────────────────
 let toastTimer;
 function showToast(msg){
   clearTimeout(toastTimer);
-  const t=document.getElementById('toast');
-  t.textContent=msg;
+  const t = document.getElementById('toast');
+  t.textContent = msg;
   t.classList.add('show');
-  toastTimer=setTimeout(()=>t.classList.remove('show'),2500);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2500);
 }
 
 // ─── INIT ─────────────────────────────────────────
