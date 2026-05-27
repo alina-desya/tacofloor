@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TacoFloor — Documentation</title>
+<style>
+</style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0E0D0B;
+  --bg2:#161512;
+  --bg3:#1E1C18;
+  --border:#2C2A24;
+  --border2:#3A3830;
+  --text:#E8E4D8;
+  --text2:#8C8880;
+  --text3:#4A4840;
+  --open-acc:#2AE87A;
+  --await-acc:#F5A623;
+  --ui:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+  --num:'SF Mono','Fira Code','Cascadia Code','Consolas','Menlo','Monaco',monospace;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--ui);min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+
+/* HEADER */
+.header{border-bottom:1px solid var(--border);background:var(--bg2);padding:14px 32px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-size:16px;font-weight:700;letter-spacing:-.3px;color:var(--text);text-decoration:none}
+.logo span{color:var(--open-acc)}
+.logo-sub{font-family:var(--num);font-size:11px;color:var(--text3);margin-left:8px;text-transform:uppercase;letter-spacing:.08em}
+.back-link{font-size:12px;color:var(--text2);text-decoration:none;display:flex;align-items:center;gap:6px;transition:color .15s}
+.back-link:hover{color:var(--text)}
+.back-link::before{content:'←'}
+
+/* HERO */
+.hero{padding:64px 32px 48px;max-width:720px;margin:0 auto;width:100%;text-align:center}
+.hero-tag{font-family:var(--num);font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px}
+.hero-title{font-size:32px;font-weight:700;letter-spacing:-.5px;line-height:1.15;margin-bottom:12px}
+.hero-title span{color:var(--open-acc)}
+.hero-desc{font-size:15px;color:var(--text2);line-height:1.6;max-width:480px;margin:0 auto}
+
+/* CARDS */
+.cards{padding:0 32px 64px;max-width:720px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:520px){.cards{grid-template-columns:1fr}}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px;text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:12px;transition:border-color .15s,transform .15s;position:relative;overflow:hidden}
+.card:hover{border-color:var(--border2);transform:translateY(-2px)}
+.card-accent{position:absolute;top:0;left:0;right:0;height:2px}
+.card.waiter .card-accent{background:var(--open-acc)}
+.card.manager .card-accent{background:var(--await-acc)}
+.card-role{font-family:var(--num);font-size:10px;text-transform:uppercase;letter-spacing:.08em}
+.card.waiter .card-role{color:var(--open-acc)}
+.card.manager .card-role{color:var(--await-acc)}
+.card-title{font-size:17px;font-weight:600;letter-spacing:-.2px}
+.card-desc{font-size:13px;color:var(--text2);line-height:1.55;flex:1}
+.card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:4px}
+.card-sections{font-family:var(--num);font-size:11px;color:var(--text3)}
+.card-arrow{font-size:14px;color:var(--text3);transition:transform .15s,color .15s}
+.card:hover .card-arrow{transform:translateX(3px);color:var(--text2)}
+
+/* SECTION LIST */
+.section-list{list-style:none;display:flex;flex-direction:column;gap:4px}
+.section-list li{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:6px}
+.section-list li::before{content:'·';color:var(--text3)}
+
+/* DIVIDER */
+.divider{max-width:720px;margin:0 auto;width:100%;padding:0 32px;display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.divider span{font-family:var(--num);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;white-space:nowrap}
+.dline{flex:1;height:1px;background:var(--border)}
+
+/* FOOTER */
+.footer{margin-top:auto;border-top:1px solid var(--border);padding:16px 32px;display:flex;align-items:center;justify-content:space-between}
+.footer-left{font-family:var(--num);font-size:11px;color:var(--text3)}
+.footer-right{font-family:var(--num);font-size:11px;color:var(--text3)}
+.footer a{color:var(--text3);text-decoration:none;transition:color .15s}
+.footer a:hover{color:var(--text2)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <a class="logo" href="../index.html">🌮 <span>Taco</span>Floor <span class="logo-sub">Docs</span></a>
+  <a class="back-link" href="../index.html">Back to app</a>
+</div>
+
+<div class="hero">
+  <div class="hero-tag">Staff documentation</div>
+  <h1 class="hero-title">How to use <span>TacoFloor</span></h1>
+  <p class="hero-desc">Step-by-step guides for waiters and managers. Find your role below and get started.</p>
+</div>
+
+<div class="divider"><span>Guides</span><div class="dline"></div></div>
+
+<div class="cards">
+
+  <a class="card waiter" href="https://github.com/alina-desya/tacofloor/blob/main/docs/waiter-guide.md" target="_blank" rel="noopener">
+    <div class="card-accent"></div>
+    <div class="card-role">Waiter</div>
+    <div class="card-title">Waiter Guide</div>
+    <p class="card-desc">Open tables, take orders, close checks, and register payments — everything you need for a smooth shift.</p>
+    <ul class="section-list">
+      <li>Reading the floor</li>
+      <li>Opening a table</li>
+      <li>Taking an order</li>
+      <li>Closing the check</li>
+      <li>Registering payment & split bills</li>
+      <li>Troubleshooting</li>
+    </ul>
+    <div class="card-footer">
+      <span class="card-sections">6 sections</span>
+      <span class="card-arrow">→</span>
+    </div>
+  </a>
+
+  <a class="card manager" href="https://github.com/alina-desya/tacofloor/blob/main/docs/manager-guide.md" target="_blank" rel="noopener">
+    <div class="card-accent"></div>
+    <div class="card-role">Manager</div>
+    <div class="card-title">Manager Guide</div>
+    <p class="card-desc">Assign waiters, monitor the shift stats, approve payments, and handle end-of-shift closeout.</p>
+    <ul class="section-list">
+      <li>Reading the floor at a glance</li>
+      <li>Opening & assigning tables</li>
+      <li>Monitoring orders</li>
+      <li>Approving payments</li>
+      <li>End of shift</li>
+      <li>Troubleshooting</li>
+    </ul>
+    <div class="card-footer">
+      <span class="card-sections">6 sections</span>
+      <span class="card-arrow">→</span>
+    </div>
+  </a>
+
+</div>
+
+<div class="footer">
+  <span class="footer-left">TacoFloor v1.0 &nbsp;·&nbsp; Last updated May 2026</span>
+  <span class="footer-right"><a href="https://github.com/alina-desya/tacofloor" target="_blank" rel="noopener">GitHub →</a></span>
+</div>
+
+</body>
+</html>
