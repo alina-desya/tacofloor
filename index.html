@@ -39,12 +39,15 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 .logo span{color:var(--open-acc)}
 .time{font-family:var(--font-mono);font-size:13px;color:var(--text2)}
 .header-right{display:flex;align-items:center;gap:12px}
+.log-btn{background:transparent;border:1px solid var(--border2);color:var(--text2);padding:6px 8px;border-radius:8px;cursor:pointer;font-size:13px}
+.log-btn:hover{background:var(--bg3);color:var(--text)}
 .role-badge{font-size:11px;font-weight:500;padding:3px 10px;border-radius:999px;border:1px solid var(--border2);color:var(--text2);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.05em}
 .avatar{width:32px;height:32px;border-radius:50%;background:var(--open-acc);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#000;cursor:pointer}
 
 /* ── STATS BAR ── */
 .stats-bar{display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--bg2)}
-.stat{flex:1;padding:12px 20px;border-right:1px solid var(--border);text-align:center}
+.stat{flex:1;padding:12px 20px;border-right:1px solid var(--border);text-align:center;cursor:pointer}
+.stat:hover{background:rgba(255,255,255,0.02)}
 .stat:last-child{border-right:none}
 .stat-val{font-family:var(--font-num);font-size:20px;font-weight:800;line-height:1}
 .stat-val.green{color:var(--open-acc)}
@@ -166,8 +169,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 <!-- HEADER -->
 <div class="header">
   <div class="logo">🌮 <span>Taco</span>Floor</div>
-  <div class="time" id="clock">—</div>
   <div class="header-right">
+    <button class="log-btn" id="menu-log-btn" title="Menu log">🧾 Menu log</button>
+    <button class="log-btn" id="waiter-log-btn" title="Waiter log">👥 Waiter log</button>
+    <button class="log-btn" id="closed-log-btn" title="Closed tables log">📜 Closed log</button>
     <span class="role-badge" id="role-badge">Manager</span>
     <div class="avatar" id="user-avatar" title="Click to switch role">MG</div>
   </div>
@@ -256,6 +261,10 @@ let activeFilter = 'all';
 let revenue = 0;
 let payMethod = 'CASH';
 let isSplit = false;
+let closedLogs = []; // {tableId, tableNumber, waiter, items:[{name,qty,price}], total, ts}
+let menuLogs = []; // [{dishId,name,qty,price,tableNumber,waiter,ts}]
+let waiterSessions = []; // [{waiter, loginTs, servedTables:[{tableNumber,total,ts}], revenue}]
+let currentWaiter = null; // name of currently-logged-in waiter when role is WAITER
 
 // ─── HELPERS ──────────────────────────────────────
 function getTotal(t){
@@ -316,8 +325,13 @@ function renderCard(t){
 }
 
 function renderGrid(){
-  const indoor  = tables.filter(t=>t.location==='INDOOR'  && (activeFilter==='all'||t.status===activeFilter));
-  const outdoor = tables.filter(t=>t.location==='OUTDOOR' && (activeFilter==='all'||t.status===activeFilter));
+  function matchesFilter(t){
+    if(activeFilter==='all') return true;
+    if(activeFilter==='HAS_COVERS') return t.status!=='CLOSED' && t.guestCount>0;
+    return t.status===activeFilter;
+  }
+  const indoor  = tables.filter(t=>t.location==='INDOOR'  && matchesFilter(t));
+  const outdoor = tables.filter(t=>t.location==='OUTDOOR' && matchesFilter(t));
   document.getElementById('indoor-grid').innerHTML  = indoor.length  ? indoor.map(renderCard).join('')  : '<div class="empty-state">No tables match this filter</div>';
   document.getElementById('outdoor-grid').innerHTML = outdoor.length ? outdoor.map(renderCard).join('') : '<div class="empty-state">No tables match this filter</div>';
   updateStats();
@@ -428,6 +442,8 @@ function adjQty(tid,did,delta){
 function saveOrder(id){
   const t = tables.find(x=>x.id===id);
   t.items = Object.entries(tempOrders).filter(([,q])=>q>0).map(([dishId,qty])=>({dishId,qty}));
+  // log ordered items for menu log
+  addMenuLogEntries(t);
   closeModal();
   renderGrid();
   showToast('Order updated');
@@ -512,6 +528,203 @@ function selectNet(n){
     if(el) el.classList.toggle('selected', k===n);
   });
 }
+function addClosedLog(t, total){
+  const items = (t.items||[]).map(it=>{
+    const d = MENU.find(m=>m.id===it.dishId) || {name:'Unknown',price:0};
+    return {name:d.name, qty:it.qty, price:d.price};
+  });
+  closedLogs.push({
+    tableId: t.id,
+    tableNumber: t.number,
+    waiter: t.waiter,
+    items: items,
+    total: total,
+    ts: new Date().toISOString()
+  });
+  // also attribute this closed table to the waiter's current session (if any)
+  const ts = new Date().toISOString();
+  let sess = waiterSessions.slice().reverse().find(s => s.waiter === t.waiter);
+  if(!sess){
+    // create a session placeholder if waiter wasn't logged in
+    sess = { waiter: t.waiter, loginTs: ts, servedTables: [], revenue: 0 };
+    waiterSessions.push(sess);
+  }
+  sess.servedTables.push({ tableNumber: t.number, total: total, ts: ts });
+  sess.revenue = (sess.revenue || 0) + total;
+}
+
+function formatTS(iso){
+  const d = new Date(iso);
+  return d.toLocaleString();
+}
+
+function openClosedLogModal(){
+  if(!closedLogs.length) return openModal('<div class="modal-title">Closed tables</div><div class="modal-sub">No closed tables yet</div>');
+  const rows = closedLogs.slice().reverse().map(c=>{
+    const itemsHtml = c.items.map(it=>`<div style="display:flex;justify-content:space-between;padding:3px 0"><span>${it.qty}× ${it.name}</span><span class=\"price\">${fmt(it.price*it.qty)}</span></div>`).join('');
+    return `
+      <div style="border-bottom:1px solid var(--border);padding:10px 0">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <div style="font-weight:700">Table ${padNum(c.tableNumber)} · ${c.waiter}</div>
+          <div style="font-family:var(--font-num);">${formatTS(c.ts)}</div>
+        </div>
+        <div class="order-summary">${itemsHtml}<div style="display:flex;justify-content:space-between;padding-top:6px;font-weight:600"><span>Closed check</span><span class=\"price\">${fmt(c.total)}</span></div></div>
+      </div>`;
+  }).join('');
+  openModal(`
+    <div class="modal-title">Closed tables</div>
+    <div class="modal-sub">Recent closed tables (newest first)</div>
+    <div class="modal-section">${rows}</div>
+    <div class="modal-actions">
+      <button class="modal-btn" onclick="closeModal()">Close</button>
+      <button class="modal-btn" onclick="clearClosedLogs()">Clear log</button>
+    </div>
+  `);
+}
+
+function clearClosedLogs(){
+  closedLogs = [];
+  closeModal();
+  showToast('Closed tables log cleared');
+}
+
+function addMenuLogEntries(t){
+  const ts = new Date().toISOString();
+  (t.items||[]).forEach(it=>{
+    const d = MENU.find(m=>m.id===it.dishId) || {name:'Unknown',price:0};
+    menuLogs.push({
+      dishId: it.dishId,
+      name: d.name,
+      qty: it.qty,
+      price: d.price,
+      tableNumber: t.number,
+      waiter: t.waiter,
+      ts: ts
+    });
+  });
+}
+
+function openMenuLogModal(){
+  if(!menuLogs.length) return openModal('<div class="modal-title">Menu log</div><div class="modal-sub">No menu orders yet</div>');
+  const rows = menuLogs.slice().reverse().map(m=>{
+    return `<div style="border-bottom:1px solid var(--border);padding:8px 0;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:13px">${m.qty}× ${m.name} <span style="color:var(--text2);font-size:12px">· Table ${padNum(m.tableNumber)} · ${m.waiter}</span></div>
+      <div style="text-align:right"><div class=\"price\">${fmt(m.price*m.qty)}</div><div style=\"font-family:var(--font-num);font-size:12px;color:var(--text2)\">${formatTS(m.ts)}</div></div>
+    </div>`;
+  }).join('');
+  openModal(`
+    <div class="modal-title">Menu log</div>
+    <div class="modal-sub">All ordered items (newest first)</div>
+    <div class="modal-section">${rows}</div>
+    <div class="modal-actions">
+      <button class="modal-btn" onclick="closeModal()">Close</button>
+      <button class="modal-btn" onclick="clearMenuLog()">Clear log</button>
+    </div>
+  `);
+}
+
+function clearMenuLog(){
+  menuLogs = [];
+  closeModal();
+  showToast('Menu log cleared');
+}
+
+function openWaiterLoginModal(){
+  const options = WAITERS.map(w=>`<option value="${w}">${w}</option>`).join('');
+  openModal(`
+    <div class="modal-title">Waiter login</div>
+    <div class="modal-sub">Select your name to sign in as waiter</div>
+    <div class="modal-section">
+      <div class="modal-label">Waiter</div>
+      <select class="modal-field" id="waiter-login-select">${options}</select>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn" onclick="closeModal()">Cancel</button>
+      <button class="modal-btn confirm" onclick="doWaiterLogin()">Sign in</button>
+    </div>
+  `);
+}
+
+function doWaiterLogin(){
+  const sel = document.getElementById('waiter-login-select');
+  if(!sel) return;
+  const name = sel.value;
+  currentRole = 'WAITER';
+  currentWaiter = name;
+  // create a new session for this login
+  waiterSessions.push({ waiter: name, loginTs: new Date().toISOString(), servedTables: [], revenue: 0 });
+  document.getElementById('user-avatar').textContent = name.split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase();
+  document.getElementById('role-badge').textContent = 'Waiter';
+  closeModal();
+  renderGrid();
+  showToast(`Signed in as ${name}`);
+}
+
+function openWaiterLogModal(){
+  if(!waiterSessions.length) return openModal('<div class="modal-title">Waiter log</div><div class="modal-sub">No waiter sessions yet</div>');
+  const rows = waiterSessions.slice().reverse().map(s=>{
+    const servedHtml = s.servedTables.length ? s.servedTables.map(st=>`<div style="display:flex;justify-content:space-between;padding:3px 0"><span>Table ${padNum(st.tableNumber)}</span><span class=\"price\">${fmt(st.total)}</span></div>`).join('') : '<div style="color:var(--text2);font-size:13px;padding:6px 0">No tables served yet</div>';
+    return `
+      <div style="border-bottom:1px solid var(--border);padding:10px 0">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <div style="font-weight:700">${s.waiter}</div>
+          <div style="font-family:var(--font-num);">Logged in: ${formatTS(s.loginTs)}</div>
+        </div>
+        <div style="margin-bottom:8px;font-size:13px;color:var(--text2)">Revenue: <strong>${fmt(s.revenue||0)}</strong></div>
+        <div class="order-summary">${servedHtml}</div>
+      </div>`;
+  }).join('');
+  openModal(`
+    <div class="modal-title">Waiter log</div>
+    <div class="modal-sub">Sessions and served tables (newest first)</div>
+    <div class="modal-section">${rows}</div>
+    <div class="modal-actions">
+      <button class="modal-btn" onclick="closeModal()">Close</button>
+      <button class="modal-btn" onclick="clearWaiterLogs()">Clear log</button>
+    </div>
+  `);
+}
+
+function clearWaiterLogs(){
+  waiterSessions = [];
+  closeModal();
+  showToast('Waiter log cleared');
+}
+function setFilterFromStat(filter){
+  activeFilter = filter;
+  // update toolbar buttons active state (if matching button exists)
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  const btn = document.querySelector(`.filter-btn[data-filter="${filter}"]`);
+  if(btn) btn.classList.add('active');
+  renderGrid();
+  // scroll to floor area
+  const el = document.getElementById('indoor-grid');
+  if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function initStatInteractions(){
+  const sOpen = document.getElementById('stat-open');
+  const sAwait = document.getElementById('stat-await');
+  const sCovers = document.getElementById('stat-covers');
+  const sRev = document.getElementById('stat-revenue');
+  if(sOpen) sOpen.addEventListener('click', ()=>setFilterFromStat('OPEN'));
+  if(sAwait) sAwait.addEventListener('click', ()=>setFilterFromStat('AWAITING_PAYMENT'));
+  if(sCovers) sCovers.addEventListener('click', ()=>setFilterFromStat('HAS_COVERS'));
+  if(sRev) sRev.addEventListener('click', ()=>setFilterFromStat('CLOSED'));
+  const logBtn = document.getElementById('closed-log-btn');
+  if(logBtn) logBtn.addEventListener('click', ()=>{
+    if(currentRole!=='MANAGER'){ showToast('Manager only'); return; }
+    openClosedLogModal();
+  });
+  const menuBtn = document.getElementById('menu-log-btn');
+  if(menuBtn) menuBtn.addEventListener('click', ()=>{
+    openMenuLogModal();
+  });
+  const waiterBtn = document.getElementById('waiter-log-btn');
+  if(waiterBtn) waiterBtn.addEventListener('click', ()=>{
+    if(currentRole!=='MANAGER'){ showToast('Manager only'); return; }
+    openWaiterLogModal();
+  });
+}
 function toggleSplit(total){
   isSplit = !isSplit;
   document.getElementById('split-toggle').classList.toggle('on', isSplit);
@@ -532,6 +745,8 @@ function processPayment(id, total){
       return;
     }
   }
+  // log closed table before clearing
+  addClosedLog(t, total);
   revenue += total;
   t.status = 'CLOSED';
   t.items = [];
@@ -544,7 +759,9 @@ function processPayment(id, total){
 // ─── APPROVE ──────────────────────────────────────
 function approveTable(id){
   const t = tables.find(x=>x.id===id);
-  revenue += getTotal(t);
+  const total = getTotal(t);
+  addClosedLog(t, total);
+  revenue += total;
   t.status = 'CLOSED';
   t.items = [];
   t.guestCount = 0;
@@ -563,23 +780,19 @@ document.getElementById('filter-group').addEventListener('click', e=>{
 
 // ─── ROLE TOGGLE ──────────────────────────────────
 document.getElementById('user-avatar').addEventListener('click', ()=>{
-  currentRole = currentRole==='MANAGER' ? 'WAITER' : 'MANAGER';
-  document.getElementById('user-avatar').textContent  = currentRole==='MANAGER' ? 'MG' : 'WT';
-  document.getElementById('role-badge').textContent   = currentRole==='MANAGER' ? 'Manager' : 'Waiter';
-  renderGrid();
-  showToast(`Switched to ${currentRole.toLowerCase()} view`);
+  if(currentRole === 'MANAGER'){
+    openWaiterLoginModal();
+  } else {
+    currentRole = 'MANAGER';
+    currentWaiter = null;
+    document.getElementById('user-avatar').textContent = 'MG';
+    document.getElementById('role-badge').textContent = 'Manager';
+    renderGrid();
+    showToast('Switched to manager view');
+  }
 });
 
-// ─── CLOCK ────────────────────────────────────────
-function updateClock(){
-  const n = new Date();
-  document.getElementById('clock').textContent =
-    String(n.getHours()).padStart(2,'0') + ':' +
-    String(n.getMinutes()).padStart(2,'0') + ':' +
-    String(n.getSeconds()).padStart(2,'0');
-}
-setInterval(updateClock, 1000);
-updateClock();
+// Clock removed — redundant in this UI
 
 // ─── TOAST ────────────────────────────────────────
 let toastTimer;
@@ -592,6 +805,7 @@ function showToast(msg){
 }
 
 // ─── INIT ─────────────────────────────────────────
+initStatInteractions();
 renderGrid();
 </script>
 </body>
