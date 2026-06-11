@@ -154,6 +154,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg3);border:1px solid var(--border2);border-radius:999px;padding:8px 20px;font-size:13px;font-weight:500;color:var(--text);opacity:0;transition:all .3s;pointer-events:none;z-index:200;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
+/* ── LEFT SIDEBAR ── */
+.left-sidebar{position:fixed;left:0;top:0;bottom:0;width:220px;background:var(--bg2);border-right:1px solid var(--border);padding:18px 12px;display:flex;flex-direction:column;gap:10px;z-index:140}
+.left-sidebar .log-btn{justify-content:flex-start}
+.left-sidebar.hidden{transform:translateX(-100%);transition:transform .2s}
+.main-content{transition:margin-left .2s;padding-left:12px}
+.sidebar-tab{position:fixed;left:0;top:50%;transform:translate(-100%, -50%);background:var(--bg3);border:1px solid var(--border2);border-radius:0 6px 6px 0;padding:8px;cursor:pointer;z-index:160}
+
 /* ── EMPTY STATE ── */
 .empty-state{padding:40px 24px;text-align:center;font-size:13px;color:var(--text3);font-family:var(--font-mono)}
 .num{font-family:var(--font-num);font-variant-numeric:tabular-nums;}
@@ -172,12 +179,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
   <div class="header-right">
     <button class="log-btn" id="menu-log-btn" title="Menu log">🧾 Menu log</button>
     <button class="log-btn" id="waiter-log-btn" title="Waiter log">👥 Waiter log</button>
-    <button class="log-btn" id="closed-log-btn" title="Closed tables log">📜 Closed log</button>
+    <button class="log-btn" id="closed-log-btn" title="Closed tables log">📜 Closed tables</button>
     <span class="role-badge" id="role-badge">Manager</span>
     <div class="avatar" id="user-avatar" title="Click to switch role">MG</div>
   </div>
 </div>
 
+<div id="main-content" class="main-content">
 <!-- STATS BAR -->
 <div class="stats-bar">
   <div class="stat">
@@ -189,24 +197,32 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
     <div class="stat-label">Awaiting payment</div>
   </div>
   <div class="stat">
-    <div class="stat-val" id="stat-covers">0</div>
-    <div class="stat-label">Covers tonight</div>
+<!-- LEFT SIDEBAR -->
+<div id="left-sidebar" class="left-sidebar">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+    <div style="font-weight:800">Logs</div>
+    <button class="log-btn" id="sidebar-close-btn" title="Hide" onclick="toggleSidebar()">✕</button>
   </div>
-  <div class="stat">
-    <div class="stat-val mono green" id="stat-revenue">$0.00</div>
-    <div class="stat-label">Revenue (shift)</div>
-  </div>
+  <button class="log-btn" id="menu-log-btn">🧾 Menu log</button>
+  <button class="log-btn" id="waiter-log-btn">👥 Waiter log</button>
+  <button class="log-btn" id="closed-log-btn">📜 Closed log</button>
 </div>
 
-<!-- TOOLBAR -->
-<div class="toolbar">
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">🌮 <span>Taco</span>Floor</div>
+  <div class="header-right">
+    <button class="log-btn" id="sidebar-toggle" title="Show logs" onclick="toggleSidebar()">☰</button>
+    <span class="role-badge" id="role-badge">Manager</span>
+    <div class="avatar" id="user-avatar" title="Click to switch role">MG</div>
+  </div>
+</div>
   <div class="filter-group" id="filter-group">
     <button class="filter-btn active" data-filter="all">All</button>
     <button class="filter-btn" data-filter="CLOSED">Closed</button>
     <button class="filter-btn" data-filter="OPEN">Open</button>
     <button class="filter-btn" data-filter="AWAITING_PAYMENT">Awaiting payment</button>
   </div>
-  <span class="section-id">INDOOR · OUTDOOR</span>
 </div>
 
 <!-- FLOOR -->
@@ -216,6 +232,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-hei
 <div class="section-divider"><span>Outdoor</span><div class="divider-line"></div></div>
 <div class="floor-grid" id="outdoor-grid"></div>
 
+</div>
 <!-- MODAL -->
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal" id="modal">
@@ -629,6 +646,18 @@ function clearMenuLog(){
   showToast('Menu log cleared');
 }
 
+// sidebar state & toggle
+let sidebarOpen = true;
+function toggleSidebar(){
+  sidebarOpen = !sidebarOpen;
+  const el = document.getElementById('left-sidebar');
+  const main = document.getElementById('main-content');
+  if(!el || !main) return;
+  el.classList.toggle('hidden', !sidebarOpen);
+  main.style.marginLeft = sidebarOpen ? '240px' : '12px';
+}
+
+
 function openWaiterLoginModal(){
   const options = WAITERS.map(w=>`<option value="${w}">${w}</option>`).join('');
   openModal(`
@@ -666,7 +695,7 @@ function openWaiterLogModal(){
     const servedHtml = s.servedTables.length ? s.servedTables.map(st=>`<div style="display:flex;justify-content:space-between;padding:3px 0"><span>Table ${padNum(st.tableNumber)}</span><span class=\"price\">${fmt(st.total)}</span></div>`).join('') : '<div style="color:var(--text2);font-size:13px;padding:6px 0">No tables served yet</div>';
     return `
       <div style="border-bottom:1px solid var(--border);padding:10px 0">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div style="display:flex;jucontent:space-between;align-items:center;margin-bottom:6px">
           <div style="font-weight:700">${s.waiter}</div>
           <div style="font-family:var(--font-num);">Logged in: ${formatTS(s.loginTs)}</div>
         </div>
@@ -805,6 +834,10 @@ function showToast(msg){
 }
 
 // ─── INIT ─────────────────────────────────────────
+// ensure sidebar layout on load
+const _ls = document.getElementById('left-sidebar');
+const _mc = document.getElementById('main-content');
+if(_ls && _mc){ _ls.classList.toggle('hidden', !sidebarOpen); _mc.style.marginLeft = sidebarOpen ? '240px' : '12px'; }
 initStatInteractions();
 renderGrid();
 </script>
