@@ -1,4 +1,4 @@
-# TacoFloor
+# TacoFloor🌮
 
 A browser-based floor management app for restaurant service — built as a portfolio project to demonstrate API design, product thinking, and end-to-end technical documentation.
 
