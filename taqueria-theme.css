@@ -212,6 +212,16 @@ select.modal-field{appearance:none;background-image:linear-gradient(45deg,transp
 .num,.stat-val,.table-num,.menu-item-price,.qty-val,.order-row .price{font-variant-numeric:tabular-nums}
 .table-num{font-family:var(--font-head)}
 
+/* ── LEFT SIDEBAR ── */
+.left-sidebar{position:fixed;left:0;top:0;bottom:0;width:220px;background:var(--cream);border-right:var(--stroke) solid var(--ink);padding:18px 12px;display:flex;flex-direction:column;gap:10px;z-index:140}
+.left-sidebar .log-btn{justify-content:flex-start}
+.left-sidebar.hidden{transform:translateX(-100%);transition:transform .2s}
+.main-content{transition:margin-left .2s;padding-left:12px}
+.sidebar-tab{position:fixed;left:0;top:50%;transform:translate(-100%, -50%);background:var(--tortilla);border:var(--stroke) solid var(--ink);border-radius:0 6px 6px 0;padding:8px;cursor:pointer;z-index:160}
+
+/* ── EMPTY STATE ── */
+.empty-state{grid-column:1/-1;padding:30px 24px;text-align:center;font:400 13px var(--font-body);color:var(--ink-soft);background:rgba(253,241,222,.6);border:2px dashed var(--ink);border-radius:var(--r)}
+
 @media (max-width:640px){
   .header{flex-wrap:wrap;gap:12px;padding:14px 16px}
   .logo{font-size:22px;gap:12px}
