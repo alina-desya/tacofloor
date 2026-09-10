@@ -10,46 +10,19 @@
 </head>
 <body>
 
-<!-- HEADER -->
-<div class="header">
-  <div class="logo">
-    <span class="logo-mark"><img src="assets/taco-logo.png" alt="TacoFloor"></span>
-    <span>
-      <span>Taco</span>Floor
-      <div class="logo-sub">Taquería · floor manager</div>
-    </span>
-  </div>
-  <div class="header-right">
-    <button class="log-btn" id="menu-log-btn" title="Menu log">🧾 Menu log</button>
-    <button class="log-btn" id="waiter-log-btn" title="Waiter log">👥 Waiter log</button>
-    <button class="log-btn" id="closed-log-btn" title="Closed tables log">📜 Closed tables</button>
-    <span class="role-badge" id="role-badge">Manager</span>
-    <div class="avatar" id="user-avatar" title="Click to switch role">MG</div>
-  </div>
-</div>
-
-<div id="main-content" class="main-content">
-<!-- STATS BAR -->
-<div class="stats-bar">
-  <div class="stat">
-    <div class="stat-val green" id="stat-open">0</div>
-    <div class="stat-label">Open tables</div>
-  </div>
-  <div class="stat">
-    <div class="stat-val amber pulse" id="stat-await">0</div>
-    <div class="stat-label">Awaiting payment</div>
-  </div>
-  <div class="stat">
 <!-- LEFT SIDEBAR -->
 <div id="left-sidebar" class="left-sidebar">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-    <div style="font-weight:800">Logs</div>
+    <div style="font-weight:800;color:var(--ink)">Logs</div>
     <button class="log-btn" id="sidebar-close-btn" title="Hide" onclick="toggleSidebar()">✕</button>
   </div>
   <button class="log-btn" id="menu-log-btn">🧾 Menu log</button>
   <button class="log-btn" id="waiter-log-btn">👥 Waiter log</button>
   <button class="log-btn" id="closed-log-btn">📜 Closed log</button>
 </div>
+
+<!-- MAIN CONTENT -->
+<div id="main-content" class="main-content" style="margin-left:240px">
 
 <!-- HEADER -->
 <div class="header">
@@ -66,6 +39,29 @@
     <div class="avatar" id="user-avatar" title="Click to switch role">MG</div>
   </div>
 </div>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat">
+    <div class="stat-val green" id="stat-open">0</div>
+    <div class="stat-label">Open tables</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val amber pulse" id="stat-await">0</div>
+    <div class="stat-label">Awaiting payment</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val mono" id="stat-covers">0</div>
+    <div class="stat-label">Covers</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val mono" id="stat-revenue">$0.00</div>
+    <div class="stat-label">Revenue</div>
+  </div>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
   <div class="filter-group" id="filter-group">
     <button class="filter-btn active" data-filter="all">All</button>
     <button class="filter-btn" data-filter="CLOSED">Closed</button>

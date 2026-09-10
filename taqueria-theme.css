@@ -214,7 +214,8 @@ select.modal-field{appearance:none;background-image:linear-gradient(45deg,transp
 
 /* ── LEFT SIDEBAR ── */
 .left-sidebar{position:fixed;left:0;top:0;bottom:0;width:220px;background:var(--cream);border-right:var(--stroke) solid var(--ink);padding:18px 12px;display:flex;flex-direction:column;gap:10px;z-index:140}
-.left-sidebar .log-btn{justify-content:flex-start}
+.left-sidebar .log-btn{justify-content:flex-start;color:var(--ink);border-color:rgba(74,35,24,.25)}
+.left-sidebar .log-btn:hover{background:var(--tortilla);color:var(--ink)}
 .left-sidebar.hidden{transform:translateX(-100%);transition:transform .2s}
 .main-content{transition:margin-left .2s;padding-left:12px}
 .sidebar-tab{position:fixed;left:0;top:50%;transform:translate(-100%, -50%);background:var(--tortilla);border:var(--stroke) solid var(--ink);border-radius:0 6px 6px 0;padding:8px;cursor:pointer;z-index:160}
