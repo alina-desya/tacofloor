@@ -135,6 +135,7 @@ a:hover{color:var(--salsa)}
 .state-awaiting .act-btn{border-color:rgba(253,241,222,.5);color:var(--cream)}
 .state-awaiting .act-btn:hover{background:rgba(253,241,222,.12)}
 .state-awaiting .act-btn.amber{background:var(--salsa);border-color:transparent}
+.pending-note{flex:1;padding:9px 0;font:600 11.5px var(--font-body);text-align:center;border-radius:7px;border:1.5px dashed rgba(253,241,222,.5);color:#E4CFBC}
 
 /* ── MODAL ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(74,35,24,.55);backdrop-filter:blur(3px);z-index:100;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}

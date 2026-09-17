@@ -8,14 +8,14 @@ A browser-based floor management app for restaurant service — built as a portf
 
 ## What it does
 
-TacoFloor gives a restaurant team a real-time view of the floor during service. Waiters and managers work in the same app but see different controls — managers can assign waiters, approve payments, and review shift logs; waiters open tables, take orders, and register payments.
+TacoFloor gives a restaurant team a real-time view of the floor during service. Waiters and managers work in the same app but see different controls, split along accountability lines — waiters open tables, take orders, and set guest counts, but only managers can register or approve a payment.
 
 Key flows:
 - Open a table and set guest count
 - Add and update orders from an inline menu
-- Close the check and accept payment (cash, card, or split bill)
-- Manager approval path for closed tables
-- Shift stats: open tables, covers, revenue, awaiting payment
+- Close the check to request manager approval — waiters cannot register payment themselves
+- Manager registers payment (cash, card, or split bill) or approves the table directly
+- Shift stats: open tables, covers, revenue, pending approval
 - Waiter session log and menu order log
 
 ---
@@ -26,7 +26,7 @@ Key flows:
 |---|---|
 | **Stack** | Vanilla JS, HTML5, CSS custom properties — no framework, no build step |
 | **Storage** | In-memory (session state); designed to connect to an external API |
-| **Roles** | Manager / Waiter — runtime-switchable, no server auth required for the demo |
+| **Roles** | Manager / Waiter — runtime-switchable, no server auth required for the demo. Payment actions (Pay, Approve) are manager-only |
 | **Deployment** | GitHub Pages (single HTML file) |
 
 ---
@@ -46,7 +46,7 @@ Both guides are structured with frontmatter for doc-site integration (Astro, Doc
 
 ## What this demonstrates
 
-- **Product thinking** — role-based UX, state machine for table status, split-bill edge cases
+- **Product thinking** — role-based UX with real permission boundaries (not just cosmetic role labels), state machine for table status, split-bill edge cases
 - **API-ready architecture** — app state is self-contained but structured for a REST or WebSocket backend (see the note in Manager Guide → End of shift)
 - **End-to-end documentation** — two complete user guides covering real user flows, written to the live app
 - **Frontend craft** — custom design system, animated status indicators, responsive modal UX — no libraries

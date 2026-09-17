@@ -10,7 +10,7 @@ author: Alina D.
 
 # Manager Guide
  
-As a manager, you have full access to TacoFloor. You can do everything a waiter can do, plus assign waiters to tables, approve payments, and monitor the shift from the stats bar.
+As a manager, you have full access to TacoFloor. You can do everything a waiter can do, plus assign waiters to tables, and you are the **only** role that can register or approve payments — waiters can open tables, take orders, and close checks, but every check they close comes to you for payment.
  
 Your role is shown in the top-right corner of the screen. If it shows **Waiter**, tap the avatar to switch back to Manager view.
  
@@ -23,13 +23,13 @@ The stats bar at the top updates in real time and gives you the shift overview w
 | Stat | What it means |
 |---|---|
 | **Open tables** | Tables currently serving guests |
-| **Awaiting payment** | Tables with a closed check — action needed |
+| **Pending approval** | Tables with a closed check — waiting on you |
 | **Covers tonight** | Total guests across all active tables |
 | **Revenue (shift)** | Cumulative total of approved payments |
  
-The **Awaiting payment** number pulses amber when it's non-zero. That's your main signal that something needs attention.
+The **Pending approval** number pulses amber when it's non-zero. That's your main signal that something needs attention — only you can clear these tables.
  
-Use the filter bar to focus the floor grid — **Awaiting payment** filter is the fastest way to see what needs to be resolved before end of shift.
+Use the filter bar to focus the floor grid — **Pending approval** filter is the fastest way to see what needs to be resolved before end of shift.
  
 ---
  
@@ -63,19 +63,19 @@ If a waiter made a mistake with an order, you can correct it by tapping **Order*
  
 ---
  
-## Approving payments
+## Registering and approving payments
  
-When a waiter closes a check, the table moves to **Awaiting payment** status. From here, two things can happen:
+When a waiter closes a check, the table moves to **Pending approval** status. Waiters cannot register or approve payment themselves — the table card shows a "Waiting for manager approval" note on their screen instead of a Pay button. From here, two things can happen, and both require you:
  
-### Option A — Waiter registers the payment themselves
+### Option A — You register the payment
  
-The waiter taps **Pay**, selects cash or card, and registers the amount. Once the full amount is covered, the table closes automatically.
+Tap **Pay** on the table card, select cash or card, and register the amount. Once the full amount is covered, the table closes automatically. This is the normal path for cash and card payments taken at the table.
  
 ### Option B — You approve directly
  
-If the payment has already been handled and you just need to close the table out:
+If the payment has already been handled outside the app and you just need to close the table out:
  
-1. Find the table showing **Awaiting** status
+1. Find the table showing **Pending** status
 2. Tap **Approve** on the table card
 3. The table closes immediately and revenue is added to the shift total
 > **When to use Approve vs Pay:** Use **Pay** when you're registering the actual payment method (cash, card, split). Use **Approve** to close out a table where payment is already settled and you just need to clear it from the floor — for example, if a corporate account is billed separately.
@@ -86,7 +86,7 @@ If the payment has already been handled and you just need to close the table out
  
 When guests want to pay separately:
  
-1. Tap **Pay** on the awaiting table
+1. Tap **Pay** on the table pending approval
 2. Toggle **Split bill** on
 3. Enter the amount the first guest is paying
 4. Tap **Register payment** — the table stays open for the remaining balance
@@ -100,7 +100,7 @@ The remaining balance updates as each partial payment is registered.
  
 Before closing down:
  
-1. Check the **Awaiting payment** filter — resolve any tables still showing this status
+1. Check the **Pending approval** filter — resolve any tables still showing this status
 2. Verify the **Revenue (shift)** total in the stats bar matches your expected takings
 3. All tables should be in **Closed** status before you finish
 > **Note:** Revenue and session data currently reset on page refresh. Persist data by wiring TacoFloor to the Tacos API — see the developer docs for details.
@@ -109,8 +109,8 @@ Before closing down:
  
 ## Troubleshooting
  
-**A table is stuck on Awaiting payment and the waiter can't close it.**
-You can always use **Approve** to force-close a table. Check with the waiter that the physical payment was actually collected first.
+**A table is stuck on Pending approval.**
+Waiters can't clear this themselves — only you can, via **Pay** or **Approve**. Check with the waiter that the physical payment was actually collected first.
  
 **The Approve button isn't visible on a table card.**
 You may be in Waiter view. Check the role badge in the top-right corner — tap the avatar to switch back to Manager.

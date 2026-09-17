@@ -9,7 +9,9 @@ lastUpdated: 2026-05-26
 
 # Waiter Guide
 
-TacoFloor is the floor management app for your shift. You use it to open tables when guests arrive, add their orders, close the check when they're done, and register payment.
+TacoFloor is the floor management app for your shift. You use it to open tables when guests arrive, set the guest count, add their orders, and close the check when they're done to request payment approval from your manager.
+
+> **Payments are manager-only.** Waiters no longer register payment directly — closing a check sends the table to your manager for approval and payment. This keeps every payment accountable to one person on shift.
 
 Your role is shown in the top-right corner of the screen. It should say **Waiter**. If it shows Manager, tap the avatar to switch.
 
@@ -23,11 +25,11 @@ The main screen shows every table in the restaurant as a card. Each card is colo
 |---|---|---|
 | Dark / dim | **Closed** | No guests, ready to open |
 | Green | **Open** | Guests are seated, order in progress |
-| Amber | **Awaiting payment** | Check is closed, payment needed |
+| Amber | **Pending approval** | Check is closed, waiting on your manager |
 
 Tables you are assigned to show your name on the card. You can work any table on the floor, but your manager assigns tables at the start of service.
 
-Use the filter bar at the top to focus on a specific status — for example, tap **Awaiting payment** to see only tables that need to be settled.
+Use the filter bar at the top to focus on a specific status — for example, tap **Pending approval** to see only tables waiting on your manager.
 
 ---
 
@@ -66,40 +68,19 @@ You can come back and add more items at any time while the table is open. Just t
 When guests are ready to pay:
 
 1. Tap **Close check** on the table card
-2. The table moves to **Awaiting payment** status (amber)
+2. The table moves to **Pending approval** status (amber) and a "Waiting for manager approval" note appears on the card in place of the action buttons
 
-The check is now closed — no more items can be added. If a guest wants to order something else after you've closed the check, let your manager know.
+The check is now closed — no more items can be added, and you can't register payment yourself. If a guest wants to order something else after you've closed the check, let your manager know.
 
 > **Getting an error?** You can only close a check if the table has at least one item on the order. If you see a warning, tap **Order**, add the dishes, save, then try closing again.
 
 ---
 
-## Registering payment
+## After you close a check
 
-Once the check is closed, tap **Pay** on the amber table card.
+Once a table is **Pending approval**, your manager takes it from there — they'll register the payment (cash, card, or split) or approve it directly if it's already been settled. You'll see the table return to **Closed** once they've processed it.
 
-### Cash or card
-
-1. Tap **Pay** on the table card
-2. Review the order summary and total
-3. Select **Cash** or **Card**
-4. If card — select the card network (Visa, Mastercard, Amex, or Other)
-5. Tap **Register payment**
-
-The table closes and returns to **Closed** status.
-
-### Split bill
-
-When guests want to pay separately:
-
-1. Tap **Pay** on the table card
-2. Toggle **Split bill** on
-3. Enter the amount the first guest is paying
-4. Tap **Register payment** — the table stays open showing the remaining balance
-5. Repeat for each guest until the full amount is covered
-6. The table closes automatically when the balance reaches zero
-
-> **Not sure how to split?** Divide the total shown on the card by the number of guests for an even split. Each guest pays their share one at a time.
+If a table sits in **Pending approval** for a while, flag it to your manager — they're the only ones who can clear it.
 
 ---
 
@@ -111,11 +92,11 @@ The table needs at least one item before you can close the check. Tap **Order**,
 **I closed the check by mistake and guests want to add something.**
 You can't add items once a check is closed. Let your manager know — they can handle it from their view.
 
-**The Pay button isn't showing the right total.**
-The total is calculated from the items saved in the order. If something is missing, the check may have been closed before all items were added. Let your manager know.
+**The total on a Pending approval table looks wrong.**
+The total is calculated from the items saved in the order. If something is missing, the check may have been closed before all items were added. Let your manager know before they register payment.
 
-**I registered a payment but the table is still showing Awaiting payment.**
-This happens with split bills when the full amount hasn't been covered yet. Check the remaining balance shown on the payment screen and register the outstanding amount.
+**A table has been Pending approval for a long time.**
+You can't register payment yourself — only your manager can. Flag the table to them so they can process it.
 
 **The table card shows the wrong number of guests.**
 Guest count is set when the table is opened. If it's wrong, let your manager know — they can correct it.
