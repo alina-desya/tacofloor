@@ -128,6 +128,41 @@ let menuLogs = []; // [{dishId,name,qty,price,tableNumber,waiter,ts}]
 let waiterSessions = []; // [{waiter, loginTs, servedTables:[{tableNumber,total,ts}], revenue}]
 let currentWaiter = null; // name of currently-logged-in waiter when role is WAITER
 
+// ─── PERSISTENCE ──────────────────────────────────
+const STORAGE_KEY = 'tacofloor-state-v1';
+function saveState(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      tables, revenue, closedLogs, menuLogs, waiterSessions, currentRole, currentWaiter
+    }));
+  }catch(e){ /* storage unavailable (private mode, quota) — state just won't persist */ }
+}
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return;
+    const s = JSON.parse(raw);
+    if(Array.isArray(s.tables)) tables = s.tables;
+    if(typeof s.revenue === 'number') revenue = s.revenue;
+    if(Array.isArray(s.closedLogs)) closedLogs = s.closedLogs;
+    if(Array.isArray(s.menuLogs)) menuLogs = s.menuLogs;
+    if(Array.isArray(s.waiterSessions)) waiterSessions = s.waiterSessions;
+    if(s.currentRole === 'MANAGER' || s.currentRole === 'WAITER') currentRole = s.currentRole;
+    if(typeof s.currentWaiter === 'string' || s.currentWaiter === null) currentWaiter = s.currentWaiter;
+  }catch(e){ /* corrupt or unavailable storage — fall back to the seeded demo data */ }
+}
+function applyRoleUI(){
+  const badge = document.getElementById('role-badge');
+  const avatar = document.getElementById('user-avatar');
+  if(currentRole === 'WAITER' && currentWaiter){
+    badge.textContent = 'Waiter';
+    avatar.textContent = currentWaiter.split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase();
+  } else {
+    badge.textContent = 'Manager';
+    avatar.textContent = 'MG';
+  }
+}
+
 // ─── HELPERS ──────────────────────────────────────
 function getTotal(t){
   return t.items.reduce((s,it)=>{
@@ -164,7 +199,8 @@ function renderCard(t){
   } else {
     if(currentRole==='MANAGER'){
       actions = `<button class="act-btn amber" onclick="openPayModal('${t.id}')">Pay ${fmt(total)}</button>
-                 <button class="act-btn" onclick="approveTable('${t.id}')">Approve</button>`;
+                 <button class="act-btn" onclick="approveTable('${t.id}')">Approve</button>
+                 <button class="act-btn" onclick="reopenTable('${t.id}')" title="Send back to reopen the order">Reopen</button>`;
     } else {
       actions = `<div class="pending-note">Waiting for manager approval</div>`;
     }
@@ -201,6 +237,7 @@ function renderGrid(){
   document.getElementById('indoor-grid').innerHTML  = indoor.length  ? indoor.map(renderCard).join('')  : '<div class="empty-state">No tables match this filter</div>';
   document.getElementById('outdoor-grid').innerHTML = outdoor.length ? outdoor.map(renderCard).join('') : '<div class="empty-state">No tables match this filter</div>';
   updateStats();
+  saveState();
 }
 
 // ─── MODAL ────────────────────────────────────────
@@ -245,7 +282,8 @@ function openOpenModal(id){
 }
 function doOpenTable(id){
   const t = tables.find(x=>x.id===id);
-  t.guestCount = parseInt(document.getElementById('guest-input').value) || 2;
+  const rawCount = parseInt(document.getElementById('guest-input').value) || 2;
+  t.guestCount = Math.min(t.capacity, Math.max(1, rawCount));
   t.status = 'OPEN';
   t.items = [];
   const ws = document.getElementById('waiter-select');
@@ -451,6 +489,7 @@ function openClosedLogModal(){
 
 function clearClosedLogs(){
   closedLogs = [];
+  saveState();
   closeModal();
   showToast('Closed tables log cleared');
 }
@@ -492,6 +531,7 @@ function openMenuLogModal(){
 
 function clearMenuLog(){
   menuLogs = [];
+  saveState();
   closeModal();
   showToast('Menu log cleared');
 }
@@ -532,8 +572,7 @@ function doWaiterLogin(){
   currentWaiter = name;
   // create a new session for this login
   waiterSessions.push({ waiter: name, loginTs: new Date().toISOString(), servedTables: [], revenue: 0 });
-  document.getElementById('user-avatar').textContent = name.split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase();
-  document.getElementById('role-badge').textContent = 'Waiter';
+  applyRoleUI();
   closeModal();
   renderGrid();
   showToast(`Signed in as ${name}`);
@@ -566,6 +605,7 @@ function openWaiterLogModal(){
 
 function clearWaiterLogs(){
   waiterSessions = [];
+  saveState();
   closeModal();
   showToast('Waiter log cleared');
 }
@@ -610,7 +650,9 @@ function toggleSplit(total){
   document.getElementById('split-section').style.display = isSplit ? 'block' : 'none';
 }
 function updateRemaining(total){
-  const v = parseFloat(document.getElementById('split-amount').value) || 0;
+  let v = parseFloat(document.getElementById('split-amount').value);
+  if(!Number.isFinite(v) || v < 0) v = 0;
+  v = Math.min(v, total);
   document.getElementById('remaining-display').innerHTML = 'Remaining: <span class="num">' + fmt(total - v) + '</span>';
 }
 function processPayment(id, total){
@@ -618,7 +660,9 @@ function processPayment(id, total){
   const t = tables.find(x=>x.id===id);
   let amount = total;
   if(isSplit){
-    amount = parseFloat(document.getElementById('split-amount').value) || total;
+    amount = parseFloat(document.getElementById('split-amount').value);
+    if(!Number.isFinite(amount) || amount <= 0){ showToast('⚠ Enter a valid payment amount'); return; }
+    amount = Math.min(amount, total);
     if(amount < total){
       showToast(`Partial payment of ${fmt(amount)} registered`);
       closeModal();
@@ -650,6 +694,14 @@ function approveTable(id){
   showToast(`✓ Table ${t.number} approved & closed`);
 }
 
+function reopenTable(id){
+  if(currentRole!=='MANAGER'){ showToast('Manager only'); return; }
+  const t = tables.find(x=>x.id===id);
+  t.status = 'OPEN';
+  renderGrid();
+  showToast(`Table ${t.number} reopened for order changes`);
+}
+
 // ─── FILTER ───────────────────────────────────────
 document.getElementById('filter-group').addEventListener('click', e=>{
   if(!e.target.matches('.filter-btn')) return;
@@ -666,8 +718,7 @@ document.getElementById('user-avatar').addEventListener('click', ()=>{
   } else {
     currentRole = 'MANAGER';
     currentWaiter = null;
-    document.getElementById('user-avatar').textContent = 'MG';
-    document.getElementById('role-badge').textContent = 'Manager';
+    applyRoleUI();
     renderGrid();
     showToast('Switched to manager view');
   }
@@ -686,6 +737,8 @@ function showToast(msg){
 }
 
 // ─── INIT ─────────────────────────────────────────
+loadState();
+applyRoleUI();
 // ensure sidebar layout on load
 const _ls = document.getElementById('left-sidebar');
 const _mc = document.getElementById('main-content');

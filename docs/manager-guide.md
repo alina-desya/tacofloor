@@ -80,6 +80,10 @@ If the payment has already been handled outside the app and you just need to clo
 3. The table closes immediately and revenue is added to the shift total
 > **When to use Approve vs Pay:** Use **Pay** when you're registering the actual payment method (cash, card, split). Use **Approve** to close out a table where payment is already settled and you just need to clear it from the floor — for example, if a corporate account is billed separately.
  
+### Option C — You reopen the table
+ 
+If a waiter closed the check too early, or a guest wants to add something after the check was closed, tap **Reopen** on the table card. This sends the table back to **Open** status so the order can be edited — the waiter (or you) can tap **Order**, add or fix items, and close the check again when ready.
+ 
 ---
  
 ## Handling split bills

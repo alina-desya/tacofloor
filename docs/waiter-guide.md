@@ -90,7 +90,7 @@ If a table sits in **Pending approval** for a while, flag it to your manager —
 The table needs at least one item before you can close the check. Tap **Order**, add the dishes the guests ordered, tap **Save order**, then try **Close check** again.
 
 **I closed the check by mistake and guests want to add something.**
-You can't add items once a check is closed. Let your manager know — they can handle it from their view.
+You can't add items once a check is closed. Let your manager know — they can tap **Reopen** on the table to send it back to Open so you can add the missing items and close it again.
 
 **The total on a Pending approval table looks wrong.**
 The total is calculated from the items saved in the order. If something is missing, the check may have been closed before all items were added. Let your manager know before they register payment.
