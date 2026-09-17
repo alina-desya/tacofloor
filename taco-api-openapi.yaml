@@ -1,0 +1,1608 @@
+openapi: 3.0.3
+
+info:
+  title: Tacos API
+  description: |
+    REST API for managing all operations of a taco restaurant — employees, tables, dishes, payments, and reports.
+
+    ## Authentication
+    All endpoints (except `POST /auth/login`) require a Bearer JWT token obtained from the login endpoint.
+    Include it in the `Authorization` header: `Authorization: Bearer <token>`
+
+    ## Roles
+    | Role    | Permissions |
+    |---------|-------------|
+    | ADMIN   | Full access |
+    | MANAGER | Manage staff, dishes, tables; register or approve payments; reopen a table pending approval |
+    | WAITER  | Open tables, manage orders, close a check to request approval — cannot create, approve, or refund payments |
+
+    ## Table Lifecycle
+    Waiters open a table, manage its order, and close the check to request payment approval.
+    Only a Manager or Admin can register a payment, approve the table directly, or send it
+    back to the waiter for corrections.
+    ```
+    CLOSED → [open] → OPEN → [close] → PENDING_APPROVAL → [approve] → CLOSED
+                        ↑                     |
+                        └──── [reopen] ───────┘
+    ```
+    A payment that fully covers the balance also closes the table automatically —
+    `POST /payments` and `POST /tables/{id}/approve` both end in `CLOSED`.
+  version: 1.0.0
+  contact:
+    name: Tacos API
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development
+  - url: https://api.tacosrestaurant.com/v1
+    description: Production
+
+tags:
+  - name: Auth
+    description: Authentication and authorization
+  - name: Employees
+    description: Employee management
+  - name: Tables
+    description: Table lifecycle management
+  - name: Dishes
+    description: Menu and dish management
+  - name: Payments
+    description: Payment processing
+  - name: Reports
+    description: Shift reports and activity logs
+
+# ─────────────────────────────────────────────
+# PATHS
+# ─────────────────────────────────────────────
+
+paths:
+
+  # ── AUTH ──────────────────────────────────
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Authenticate employee
+      description: Returns a JWT token for use in subsequent requests.
+      operationId: login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            example:
+              email: maria@tacos.com
+              pin: "1234"
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Invalidate current token
+      operationId: logout
+      responses:
+        '204':
+          description: Logged out successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Get current employee profile
+      operationId: getMe
+      responses:
+        '200':
+          description: Current employee
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ── EMPLOYEES ─────────────────────────────
+
+  /employees:
+    post:
+      tags: [Employees]
+      summary: Create employee
+      operationId: createEmployee
+      x-roles: [ADMIN, MANAGER]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEmployeeRequest'
+            example:
+              name: Carlos Rivera
+              email: carlos@tacos.com
+              role: WAITER
+              pin: "5678"
+      responses:
+        '201':
+          description: Employee created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+    get:
+      tags: [Employees]
+      summary: List all employees
+      operationId: listEmployees
+      x-roles: [ADMIN, MANAGER]
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: role
+          in: query
+          schema:
+            $ref: '#/components/schemas/EmployeeRole'
+        - name: active
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Paginated list of employees
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Employee'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /employees/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+
+    get:
+      tags: [Employees]
+      summary: Get employee by ID
+      operationId: getEmployee
+      x-roles: [ADMIN, MANAGER]
+      responses:
+        '200':
+          description: Employee found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [Employees]
+      summary: Update employee details
+      operationId: updateEmployee
+      x-roles: [ADMIN, MANAGER]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateEmployeeRequest'
+      responses:
+        '200':
+          description: Employee updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Employee'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Employees]
+      summary: Deactivate employee (soft delete)
+      operationId: deleteEmployee
+      x-roles: [ADMIN]
+      responses:
+        '204':
+          description: Employee deactivated
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ── TABLES ────────────────────────────────
+
+  /tables:
+    post:
+      tags: [Tables]
+      summary: Register a new table
+      operationId: createTable
+      x-roles: [ADMIN, MANAGER]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTableRequest'
+            example:
+              number: 7
+              capacity: 4
+              location: OUTDOOR
+              assignedWaiterId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+      responses:
+        '201':
+          description: Table registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Table'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+    get:
+      tags: [Tables]
+      summary: List all tables
+      operationId: listTables
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/TableStatus'
+        - name: location
+          in: query
+          schema:
+            $ref: '#/components/schemas/TableLocation'
+        - name: assignedWaiterId
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Paginated list of tables
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Table'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /tables/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+
+    get:
+      tags: [Tables]
+      summary: Get table by ID
+      operationId: getTable
+      responses:
+        '200':
+          description: Table found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Table'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [Tables]
+      summary: Update table orders or reassign waiter
+      description: |
+        Waiters may add/modify order items. Only Manager or Admin may reassign `assignedWaiterId`.
+      operationId: updateTable
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTableRequest'
+      responses:
+        '200':
+          description: Table updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Table'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/BusinessRuleViolation'
+
+    delete:
+      tags: [Tables]
+      summary: Remove table
+      description: Table must have status CLOSED. Use this to remove seasonal tables (e.g. terrace in winter).
+      operationId: deleteTable
+      x-roles: [ADMIN, MANAGER]
+      responses:
+        '204':
+          description: Table removed
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/BusinessRuleViolation'
+
+  /tables/{id}/open:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    post:
+      tags: [Tables]
+      summary: Open table
+      description: Opens a check for the table and registers the number of guests. Table must be CLOSED.
+      operationId: openTable
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenTableRequest'
+            example:
+              guestCount: 4
+      responses:
+        '200':
+          description: Table opened
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Table'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /tables/{id}/close:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    post:
+      tags: [Tables]
+      summary: Close table and request payment approval
+      description: |
+        Closes the table check and generates a pending Payment. Table must be OPEN.
+        Status transitions to PENDING_APPROVAL. Any role may close a table they're serving —
+        registering or approving the resulting payment is Manager/Admin-only (see
+        `POST /payments`, `POST /tables/{id}/approve`).
+      operationId: closeTable
+      responses:
+        '200':
+          description: Table closed and payment order created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CloseTableResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/BusinessRuleViolation'
+
+  /tables/{id}/approve:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    post:
+      tags: [Tables]
+      summary: Approve payment and close table
+      description: |
+        Marks the table as fully paid and returns it to CLOSED status, without requiring a
+        Payment record — for example when a corporate account is billed separately.
+        Table must be PENDING_APPROVAL. Only Manager or Admin may approve.
+      operationId: approveTable
+      x-roles: [ADMIN, MANAGER]
+      responses:
+        '200':
+          description: Table approved and closed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Table'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/BusinessRuleViolation'
+
+  /tables/{id}/reopen:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    post:
+      tags: [Tables]
+      summary: Reopen a table pending approval
+      description: |
+        Sends a table back from PENDING_APPROVAL to OPEN so the order can be corrected —
+        for example if a check was closed before all items were added, or a guest wants
+        to add something after the check was closed. Table must be PENDING_APPROVAL.
+        Only Manager or Admin may reopen.
+      operationId: reopenTable
+      x-roles: [ADMIN, MANAGER]
+      responses:
+        '200':
+          description: Table reopened
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Table'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/BusinessRuleViolation'
+
+  # ── DISHES ────────────────────────────────
+
+  /dishes:
+    post:
+      tags: [Dishes]
+      summary: Create a new dish
+      operationId: createDish
+      x-roles: [ADMIN, MANAGER]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDishRequest'
+            example:
+              name: Birria Taco
+              description: Slow-braised beef with consomé dipping broth
+              category: TACO
+              subcategory: BIRRIA
+              price: 7.00
+              currency: USD
+      responses:
+        '201':
+          description: Dish created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dish'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    get:
+      tags: [Dishes]
+      summary: List all dishes
+      operationId: listDishes
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: category
+          in: query
+          schema:
+            $ref: '#/components/schemas/DishCategory'
+        - name: available
+          in: query
+          schema:
+            type: boolean
+        - name: minPrice
+          in: query
+          schema:
+            type: number
+            format: float
+            minimum: 0
+        - name: maxPrice
+          in: query
+          schema:
+            type: number
+            format: float
+            minimum: 0
+        - name: search
+          in: query
+          description: Full-text search on name and description
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Paginated list of dishes
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Dish'
+
+  /dishes/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+
+    get:
+      tags: [Dishes]
+      summary: Get dish by ID
+      operationId: getDish
+      security: []
+      responses:
+        '200':
+          description: Dish found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dish'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [Dishes]
+      summary: Update dish details or price
+      operationId: updateDish
+      x-roles: [ADMIN, MANAGER]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDishRequest'
+      responses:
+        '200':
+          description: Dish updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dish'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Dishes]
+      summary: Delete dish
+      operationId: deleteDish
+      x-roles: [ADMIN, MANAGER]
+      responses:
+        '204':
+          description: Dish deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ── PAYMENTS ──────────────────────────────
+
+  /payments:
+    post:
+      tags: [Payments]
+      summary: Create a payment
+      description: |
+        Creates a card or cash payment for a table. Supports partial (split bill) payments.
+        When `remainingBalance` reaches 0 the table closes automatically. Table must be
+        PENDING_APPROVAL. Only Manager or Admin may create a payment — waiters can close a
+        table to request approval but cannot register payment themselves.
+      operationId: createPayment
+      x-roles: [ADMIN, MANAGER]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePaymentRequest'
+            examples:
+              fullCardPayment:
+                summary: Full card payment
+                value:
+                  tableId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                  orderId: "b2c3d4e5-f6a7-8901-bcde-f12345678901"
+                  type: CARD
+                  cardNetwork: VISA
+                  scope: NATIONAL
+              splitCashPayment:
+                summary: Partial cash payment (split bill)
+                value:
+                  tableId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                  orderId: "b2c3d4e5-f6a7-8901-bcde-f12345678901"
+                  type: CASH
+                  scope: NATIONAL
+                  splitAmount: 43.50
+      responses:
+        '201':
+          description: Payment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/BusinessRuleViolation'
+
+    get:
+      tags: [Payments]
+      summary: List all payments
+      operationId: listPayments
+      x-roles: [ADMIN, MANAGER]
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: type
+          in: query
+          schema:
+            $ref: '#/components/schemas/PaymentType'
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/PaymentStatus'
+        - name: tableId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Paginated list of payments
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Payment'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /payments/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+
+    get:
+      tags: [Payments]
+      summary: Get payment by ID
+      operationId: getPayment
+      x-roles: [ADMIN, MANAGER]
+      responses:
+        '200':
+          description: Payment found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /payments/{id}/refund:
+    parameters:
+      - $ref: '#/components/parameters/IdParam'
+    post:
+      tags: [Payments]
+      summary: Refund a payment
+      operationId: refundPayment
+      x-roles: [ADMIN]
+      responses:
+        '200':
+          description: Payment refunded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/BusinessRuleViolation'
+
+  # ── REPORTS ───────────────────────────────
+
+  /reports/shift:
+    get:
+      tags: [Reports]
+      summary: Shift summary report
+      description: Returns revenue, orders, top dishes, and busiest hour for a given date.
+      operationId: getShiftReport
+      x-roles: [ADMIN, MANAGER]
+      parameters:
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          example: "2026-04-27"
+        - name: shift
+          in: query
+          schema:
+            type: string
+            enum: [MORNING, EVENING, ALL]
+            default: ALL
+      responses:
+        '200':
+          description: Shift report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShiftReport'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /reports:
+    get:
+      tags: [Reports]
+      summary: Employee activity log
+      description: Returns a paginated log of actions performed by employees across all resources.
+      operationId: getActivityReport
+      x-roles: [ADMIN, MANAGER]
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: employeeId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: resource
+          in: query
+          schema:
+            type: string
+            enum: [table, dish, employee, payment]
+        - name: action
+          in: query
+          schema:
+            type: string
+            enum: [CREATE, UPDATE, DELETE, OPEN, CLOSE, APPROVE, REOPEN, REFUND]
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Paginated activity log
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ActivityLogEntry'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+# ─────────────────────────────────────────────
+# COMPONENTS
+# ─────────────────────────────────────────────
+
+components:
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  # ── PARAMETERS ────────────────────────────
+
+  parameters:
+    IdParam:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+    PageParam:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+
+    LimitParam:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+  # ── SCHEMAS ───────────────────────────────
+
+  schemas:
+
+    # Enums
+
+    EmployeeRole:
+      type: string
+      enum: [ADMIN, MANAGER, WAITER]
+
+    TableStatus:
+      type: string
+      enum: [CLOSED, OPEN, PENDING_APPROVAL]
+
+    TableLocation:
+      type: string
+      enum: [INDOOR, OUTDOOR, TERRACE, BAR]
+
+    DishCategory:
+      type: string
+      enum: [TACO, SOUP, DRINK, SIDE]
+
+    TacoSubcategory:
+      type: string
+      enum: [AL_PASTOR, CARNITAS, BIRRIA, FISH, VEGGIE, BARBACOA]
+
+    PaymentType:
+      type: string
+      enum: [CARD, CASH]
+
+    CardNetwork:
+      type: string
+      enum: [VISA, MASTERCARD, AMEX, OTHER]
+
+    PaymentScope:
+      type: string
+      enum: [NATIONAL, INTERNATIONAL]
+
+    PaymentStatus:
+      type: string
+      enum: [PENDING, COMPLETED, FAILED, REFUNDED]
+
+    # Core domain objects
+
+    Employee:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          $ref: '#/components/schemas/EmployeeRole'
+        active:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Table:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        number:
+          type: integer
+          minimum: 1
+        capacity:
+          type: integer
+          minimum: 1
+        location:
+          $ref: '#/components/schemas/TableLocation'
+        status:
+          $ref: '#/components/schemas/TableStatus'
+        assignedWaiterId:
+          type: string
+          format: uuid
+          nullable: true
+        guestCount:
+          type: integer
+          minimum: 1
+          nullable: true
+        openedAt:
+          type: string
+          format: date-time
+          nullable: true
+        closedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    OrderItem:
+      type: object
+      properties:
+        dishId:
+          type: string
+          format: uuid
+        dishName:
+          type: string
+        quantity:
+          type: integer
+          minimum: 1
+        unitPrice:
+          type: number
+          format: float
+        subtotal:
+          type: number
+          format: float
+
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tableId:
+          type: string
+          format: uuid
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+        totalAmount:
+          type: number
+          format: float
+        status:
+          type: string
+          enum: [PENDING, CONFIRMED, CANCELLED]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Dish:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          $ref: '#/components/schemas/DishCategory'
+        subcategory:
+          type: string
+          nullable: true
+        price:
+          type: number
+          format: float
+          minimum: 0
+        currency:
+          type: string
+          example: USD
+        available:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Payment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tableId:
+          type: string
+          format: uuid
+        orderId:
+          type: string
+          format: uuid
+        amount:
+          type: number
+          format: float
+        splitAmount:
+          type: number
+          format: float
+          nullable: true
+          description: Amount covered by this payment when splitting a bill
+        remainingBalance:
+          type: number
+          format: float
+          description: Remaining unpaid balance on the order after this payment
+        isPartial:
+          type: boolean
+        currency:
+          type: string
+          example: USD
+        type:
+          $ref: '#/components/schemas/PaymentType'
+        cardNetwork:
+          $ref: '#/components/schemas/CardNetwork'
+          nullable: true
+        scope:
+          $ref: '#/components/schemas/PaymentScope'
+        status:
+          $ref: '#/components/schemas/PaymentStatus'
+        reference:
+          type: string
+          nullable: true
+        processedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    ActivityLogEntry:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        employeeId:
+          type: string
+          format: uuid
+        employeeName:
+          type: string
+        action:
+          type: string
+          enum: [CREATE, UPDATE, DELETE, OPEN, CLOSE, APPROVE, REOPEN, REFUND]
+        resource:
+          type: string
+          enum: [table, dish, employee, payment]
+        resourceId:
+          type: string
+          format: uuid
+        description:
+          type: string
+          example: "Closed table 7 with 3 guests. Total: $87.50"
+        timestamp:
+          type: string
+          format: date-time
+
+    ShiftReport:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        shift:
+          type: string
+          enum: [MORNING, EVENING, ALL]
+        summary:
+          type: object
+          properties:
+            totalRevenue:
+              type: number
+              format: float
+            currency:
+              type: string
+            totalOrders:
+              type: integer
+            totalGuests:
+              type: integer
+            averageOrderValue:
+              type: number
+              format: float
+            totalTips:
+              type: number
+              format: float
+        busiestHour:
+          type: object
+          properties:
+            hour:
+              type: string
+              example: "13:00–14:00"
+            orderCount:
+              type: integer
+            revenue:
+              type: number
+              format: float
+        revenueByCategory:
+          type: object
+          additionalProperties:
+            type: number
+            format: float
+          example:
+            TACO: 780.00
+            SOUP: 210.00
+            DRINK: 185.50
+            SIDE: 65.00
+        topDishes:
+          type: array
+          items:
+            type: object
+            properties:
+              dishId:
+                type: string
+                format: uuid
+              name:
+                type: string
+              quantitySold:
+                type: integer
+              revenue:
+                type: number
+                format: float
+        paymentBreakdown:
+          type: object
+          properties:
+            CARD:
+              type: object
+              properties:
+                count:
+                  type: integer
+                total:
+                  type: number
+                  format: float
+            CASH:
+              type: object
+              properties:
+                count:
+                  type: integer
+                total:
+                  type: number
+                  format: float
+
+    # Pagination
+
+    PaginatedResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items: {}
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+            limit:
+              type: integer
+            total:
+              type: integer
+            totalPages:
+              type: integer
+
+    # Request bodies
+
+    LoginRequest:
+      type: object
+      required: [email, pin]
+      properties:
+        email:
+          type: string
+          format: email
+        pin:
+          type: string
+          minLength: 4
+          maxLength: 8
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        employee:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+            role:
+              $ref: '#/components/schemas/EmployeeRole'
+        expiresAt:
+          type: string
+          format: date-time
+
+    CreateEmployeeRequest:
+      type: object
+      required: [name, email, role, pin]
+      properties:
+        name:
+          type: string
+          minLength: 2
+        email:
+          type: string
+          format: email
+        role:
+          $ref: '#/components/schemas/EmployeeRole'
+        pin:
+          type: string
+          minLength: 4
+          maxLength: 8
+
+    UpdateEmployeeRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+        email:
+          type: string
+          format: email
+        role:
+          $ref: '#/components/schemas/EmployeeRole'
+        pin:
+          type: string
+          minLength: 4
+          maxLength: 8
+        active:
+          type: boolean
+
+    CreateTableRequest:
+      type: object
+      required: [number, capacity, location]
+      properties:
+        number:
+          type: integer
+          minimum: 1
+        capacity:
+          type: integer
+          minimum: 1
+        location:
+          $ref: '#/components/schemas/TableLocation'
+        assignedWaiterId:
+          type: string
+          format: uuid
+
+    OpenTableRequest:
+      type: object
+      required: [guestCount]
+      properties:
+        guestCount:
+          type: integer
+          minimum: 1
+          description: Must not exceed the table's capacity; the server clamps or rejects values above it.
+
+    UpdateTableRequest:
+      type: object
+      properties:
+        assignedWaiterId:
+          type: string
+          format: uuid
+          description: Only Manager or Admin may update this field
+        items:
+          type: array
+          items:
+            type: object
+            required: [dishId, quantity]
+            properties:
+              dishId:
+                type: string
+                format: uuid
+              quantity:
+                type: integer
+                minimum: 0
+                description: Set to 0 to remove item from order
+
+    CloseTableResponse:
+      type: object
+      properties:
+        table:
+          $ref: '#/components/schemas/Table'
+        paymentOrder:
+          $ref: '#/components/schemas/Payment'
+
+    CreateDishRequest:
+      type: object
+      required: [name, category, price, currency]
+      properties:
+        name:
+          type: string
+          minLength: 2
+        description:
+          type: string
+        category:
+          $ref: '#/components/schemas/DishCategory'
+        subcategory:
+          type: string
+        price:
+          type: number
+          format: float
+          minimum: 0
+          exclusiveMinimum: true
+        currency:
+          type: string
+          minLength: 3
+          maxLength: 3
+          example: USD
+        available:
+          type: boolean
+          default: true
+
+    UpdateDishRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+        description:
+          type: string
+        price:
+          type: number
+          format: float
+          minimum: 0
+          exclusiveMinimum: true
+        available:
+          type: boolean
+
+    CreatePaymentRequest:
+      type: object
+      required: [tableId, orderId, type, scope]
+      properties:
+        tableId:
+          type: string
+          format: uuid
+        orderId:
+          type: string
+          format: uuid
+        type:
+          $ref: '#/components/schemas/PaymentType'
+        cardNetwork:
+          $ref: '#/components/schemas/CardNetwork'
+          description: Required when type is CARD
+        scope:
+          $ref: '#/components/schemas/PaymentScope'
+        splitAmount:
+          type: number
+          format: float
+          minimum: 0
+          exclusiveMinimum: true
+          description: Partial amount for split bill. Omit to pay the full remaining balance.
+
+    # Error shapes
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: TABLE_NOT_OPEN
+            message:
+              type: string
+              example: Table 7 is not open and cannot accept orders.
+            status:
+              type: integer
+              example: 422
+
+    ValidationErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: VALIDATION_ERROR
+            message:
+              type: string
+              example: Request validation failed.
+            status:
+              type: integer
+              example: 400
+            fields:
+              type: array
+              items:
+                type: object
+                properties:
+                  field:
+                    type: string
+                    example: price
+                  message:
+                    type: string
+                    example: Must be a positive number.
+
+  # ── RESPONSES ─────────────────────────────
+
+  responses:
+    ValidationError:
+      description: Request validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrorResponse'
+          example:
+            error:
+              code: VALIDATION_ERROR
+              message: Request validation failed.
+              status: 400
+              fields:
+                - field: price
+                  message: Must be a positive number.
+                - field: category
+                  message: Must be one of TACO, SOUP, DRINK, SIDE.
+
+    Unauthorized:
+      description: Missing or invalid authentication token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: UNAUTHORIZED
+              message: Authentication token is missing or invalid.
+              status: 401
+
+    Forbidden:
+      description: Insufficient role permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: FORBIDDEN
+              message: Your role does not have permission to perform this action.
+              status: 403
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: NOT_FOUND
+              message: The requested resource was not found.
+              status: 404
+
+    Conflict:
+      description: Resource conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: TABLE_ALREADY_OPEN
+              message: Table 7 is already open.
+              status: 409
+
+    BusinessRuleViolation:
+      description: Business rule violation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: TABLE_NOT_CLOSEABLE
+              message: Table 7 has no order items and cannot be closed.
+              status: 422
+
+# ─────────────────────────────────────────────
+# GLOBAL SECURITY
+# ─────────────────────────────────────────────
+
+security:
+  - BearerAuth: []

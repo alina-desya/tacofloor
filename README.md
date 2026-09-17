@@ -25,7 +25,7 @@ Key flows:
 | | |
 |---|---|
 | **Stack** | Vanilla JS, HTML5, CSS custom properties — no framework, no build step |
-| **Storage** | In-memory (session state); designed to connect to an external API |
+| **Storage** | Browser local storage (per-device); designed to connect to an external API — see [`taco-api-openapi.yaml`](taco-api-openapi.yaml) |
 | **Roles** | Manager / Waiter — runtime-switchable, no server auth required for the demo. Payment actions (Pay, Approve) are manager-only |
 | **Deployment** | GitHub Pages (single HTML file) |
 
@@ -55,7 +55,7 @@ Both guides are structured with frontmatter for doc-site integration (Astro, Doc
 
 ## Connecting to an API
 
-TacoFloor's state is currently in-memory. To persist data across sessions, replace the in-memory `tables` and `revenue` state with API calls to a backend. The Manager Guide references the Tacos API for integration details — see developer docs (link to be added).
+TacoFloor persists its `tables` and `revenue` state to the browser's local storage, which covers a single device but not a shared, multi-terminal restaurant setup. To back it with a real multi-device source of truth, replace the local state with calls to a backend. The full contract for that backend — employees, tables, dishes, payments, and shift reports — is specified in [`taco-api-openapi.yaml`](taco-api-openapi.yaml), which the Manager Guide also references for integration details.
 
 ---
 

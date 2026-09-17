@@ -107,7 +107,7 @@ Before closing down:
 1. Check the **Pending approval** filter — resolve any tables still showing this status
 2. Verify the **Revenue (shift)** total in the stats bar matches your expected takings
 3. All tables should be in **Closed** status before you finish
-> **Note:** Revenue and session data currently reset on page refresh. Persist data by wiring TacoFloor to the Tacos API — see the developer docs for details.
+> **Note:** Revenue and session data persist in your browser (via local storage) across refreshes, but not across devices or browsers. For a shared, multi-device source of truth, wire TacoFloor to the Tacos API — see [`taco-api-openapi.yaml`](../taco-api-openapi.yaml) for the full endpoint reference.
  
 ---
  
