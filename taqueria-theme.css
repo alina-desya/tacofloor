@@ -138,10 +138,10 @@ a:hover{color:var(--salsa)}
 .pending-note{flex:1;padding:9px 0;font:600 11.5px var(--font-body);text-align:center;border-radius:7px;border:1.5px dashed rgba(253,241,222,.5);color:#E4CFBC}
 
 /* ── MODAL ── */
-.modal-overlay{position:fixed;inset:0;background:rgba(74,35,24,.55);backdrop-filter:blur(3px);z-index:100;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay{position:fixed;inset:0;background:rgba(74,35,24,.55);backdrop-filter:blur(3px);z-index:145;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .2s}
 .modal-overlay.open{opacity:1;pointer-events:all}
-.modal{background:var(--cream);border:var(--stroke) solid var(--ink);border-bottom:none;border-radius:16px 16px 0 0;width:100%;max-width:520px;padding:24px;transform:translateY(30px);transition:transform .25s cubic-bezier(.34,1.56,.64,1);max-height:90vh;overflow-y:auto}
-.modal-overlay.open .modal{transform:translateY(0)}
+.modal{background:var(--cream);border:var(--stroke) solid var(--ink);border-radius:16px;width:100%;max-width:520px;padding:24px;transform:translateY(16px) scale(.97);transition:transform .25s cubic-bezier(.34,1.56,.64,1);max-height:90vh;overflow-y:auto}
+.modal-overlay.open .modal{transform:translateY(0) scale(1)}
 .modal-handle{width:44px;height:4px;background:var(--ink);opacity:.35;border-radius:999px;margin:0 auto 20px;cursor:pointer}
 .modal-title{font-family:var(--font-head);font-size:20px;font-weight:400;color:var(--ink);margin-bottom:6px;line-height:1.15}
 .modal-sub{font:400 13px var(--font-body);color:var(--ink-soft);margin-bottom:20px}
