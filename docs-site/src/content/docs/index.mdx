@@ -1,0 +1,40 @@
+---
+title: TacoFloor Docs
+description: User guides and API reference for TacoFloor, a browser-based restaurant floor management app.
+template: splash
+hero:
+  tagline: Documentation for TacoFloor — a browser-based floor management app for restaurant service.
+  actions:
+    - text: Waiter Guide
+      link: /guides/waiter-guide/
+      icon: right-arrow
+    - text: Manager Guide
+      link: /guides/manager-guide/
+      icon: right-arrow
+    - text: API Reference
+      link: /api/
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## What's here
+
+<CardGrid stagger>
+	<Card title="Waiter Guide" icon="pencil">
+		Open tables, take orders, and close checks for approval.
+	</Card>
+	<Card title="Manager Guide" icon="setting">
+		Assign waiters, register or approve payments, and read shift stats.
+	</Card>
+	<Card title="API Reference" icon="open-book">
+		The Tacos API — the REST backend TacoFloor is designed to connect to for employees, tables, dishes, payments, and reports.
+	</Card>
+</CardGrid>
+
+## About TacoFloor
+
+TacoFloor gives a restaurant team a real-time view of the floor during service, with role-based controls split along accountability lines — waiters open tables and take orders, but only managers can register or approve a payment.
+
+[See the live demo →](https://alina-desya.github.io/tacofloor)
